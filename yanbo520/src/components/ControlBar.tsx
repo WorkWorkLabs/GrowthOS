@@ -37,9 +37,35 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
         onClick={onCreateProject}
         className="bg-primary text-text-inverse px-4 py-2 rounded-md text-md font-medium shadow-button hover:bg-blue-500 transition-colors"
       >
-Create Project
+        Create Project
       </button>
 
+      {/* Search Box */}
+      <div className={`
+        relative flex items-center bg-white rounded-lg shadow-button transition-all duration-200
+        ${isSearchFocused ? 'ring-2 ring-primary ring-opacity-50' : ''}
+      `}>
+        <Search className="w-4 h-4 text-gray-400 absolute left-3" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
+          placeholder="Search products, creators, or tags..."
+          className="w-64 pl-10 pr-10 py-2 text-sm border-0 rounded-lg focus:outline-none focus:ring-0 bg-transparent text-text-primary placeholder-gray-400"
+        />
+        {searchQuery && (
+          <button
+            onClick={clearSearch}
+            className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Filter Options */}
       <div className="bg-white rounded-md p-1 shadow-button flex">
         {FILTER_OPTIONS.map(({ key, label }) => (
           <button

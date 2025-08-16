@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Header } from '@/components/Header'
 import { ControlBar } from '@/components/ControlBar'
 import { ProjectGrid } from '@/components/ProjectGrid'
@@ -14,6 +14,7 @@ export default function Home() {
   const [products, setProducts] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'time' | 'price' | 'likes' | 'views'>('time')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -22,11 +23,23 @@ export default function Home() {
                          sortBy === 'price' ? 'price' :
                          sortBy === 'likes' ? 'likes' : 'views'
         
-        const data = await ProductsService.getProducts({
-          sortBy: sortField,
-          sortOrder: sortBy === 'price' ? 'desc' : 'desc', // 价格和其他都是降序
-          limit: 50
-        })
+        let data: Project[]
+        if (searchQuery.trim()) {
+          // 如果有搜索查询，使用搜索功能
+          data = await ProductsService.searchProducts(searchQuery, {
+            sortBy: sortField,
+            sortOrder: 'desc',
+            limit: 50
+          })
+        } else {
+          // 否则获取所有产品
+          data = await ProductsService.getProducts({
+            sortBy: sortField,
+            sortOrder: 'desc',
+            limit: 50
+          })
+        }
+        
         setProducts(data)
       } catch (error) {
         console.error('Failed to load products:', error)
@@ -36,10 +49,15 @@ export default function Home() {
     }
 
     loadProducts()
-  }, [sortBy])
+  }, [sortBy, searchQuery])
 
   const handleFilterChange = (filter: 'time' | 'price' | 'likes' | 'views') => {
     setSortBy(filter)
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    setLoading(true)
   }
 
   const handleCreateProject = () => {
@@ -61,6 +79,7 @@ export default function Home() {
         <ControlBar 
           onFilterChange={handleFilterChange}
           onCreateProject={handleCreateProject}
+          onSearch={handleSearch}
           activeFilter={sortBy}
         />
         <ProjectGrid projects={products} />
