@@ -15,18 +15,34 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'time' | 'price' | 'likes' | 'views'>('time')
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+
+  // 防抖处理搜索查询
+  useEffect(() => {
+    if (searchQuery !== debouncedSearchQuery) {
+      setIsSearching(true)
+    }
+    
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 500) // 500ms 延迟
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, debouncedSearchQuery])
 
   useEffect(() => {
     const loadProducts = async () => {
+      setLoading(true)
       try {
         const sortField = sortBy === 'time' ? 'created_at' : 
                          sortBy === 'price' ? 'price' :
                          sortBy === 'likes' ? 'likes' : 'views'
         
         let data: Project[]
-        if (searchQuery.trim()) {
+        if (debouncedSearchQuery.trim()) {
           // 如果有搜索查询，使用搜索功能
-          data = await ProductsService.searchProducts(searchQuery, {
+          data = await ProductsService.searchProducts(debouncedSearchQuery, {
             sortBy: sortField,
             sortOrder: 'desc',
             limit: 50
@@ -45,11 +61,12 @@ export default function Home() {
         console.error('Failed to load products:', error)
       } finally {
         setLoading(false)
+        setIsSearching(false)
       }
     }
 
     loadProducts()
-  }, [sortBy, searchQuery])
+  }, [sortBy, debouncedSearchQuery])
 
   const handleFilterChange = (filter: 'time' | 'price' | 'likes' | 'views') => {
     setSortBy(filter)
@@ -57,7 +74,7 @@ export default function Home() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
-    setLoading(true)
+    // 不再在这里设置loading，让防抖机制处理
   }
 
   const handleCreateProject = () => {
@@ -81,6 +98,7 @@ export default function Home() {
           onCreateProject={handleCreateProject}
           onSearch={handleSearch}
           activeFilter={sortBy}
+          isSearching={isSearching}
         />
         <ProjectGrid projects={products} />
       </div>

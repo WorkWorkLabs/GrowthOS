@@ -3,16 +3,17 @@
 import { useState } from 'react'
 import { FilterType } from '@/types'
 import { FILTER_OPTIONS } from '@/lib/constants'
-import { Search, X } from 'lucide-react'
+import { Search, X, Loader2 } from 'lucide-react'
 
 interface ControlBarProps {
   onFilterChange?: (filter: FilterType) => void
   onCreateProject?: () => void
   onSearch?: (query: string) => void
   activeFilter?: FilterType
+  isSearching?: boolean
 }
 
-export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFilter = 'time' }: ControlBarProps) {
+export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFilter = 'time', isSearching = false }: ControlBarProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
 
@@ -45,7 +46,11 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
         relative flex items-center bg-white rounded-lg shadow-button transition-all duration-200
         ${isSearchFocused ? 'ring-2 ring-primary ring-opacity-50' : ''}
       `}>
-        <Search className="w-4 h-4 text-gray-400 absolute left-3" />
+        {isSearching && searchQuery ? (
+          <Loader2 className="w-4 h-4 text-primary absolute left-3 animate-spin" />
+        ) : (
+          <Search className="w-4 h-4 text-gray-400 absolute left-3" />
+        )}
         <input
           type="text"
           value={searchQuery}
