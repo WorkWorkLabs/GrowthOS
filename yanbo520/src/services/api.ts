@@ -43,12 +43,19 @@ class ApiService {
   }
 
   async getUserProfile(walletAddress: string): Promise<UserProfile | null> {
+    // 先尝试从localStorage获取自定义用户数据
+    const stored = localStorage.getItem(`profile_${walletAddress}`)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+
     // 黑客松阶段返回模拟用户数据
     return {
       walletAddress,
       username: 'Digital Nomad',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + walletAddress,
-      bio: 'Building the future of work',
+      bio: 'Building the future of work with Web3 technologies',
+      email: '',
       stats: {
         totalSales: 1250,
         totalProducts: 8,
@@ -62,9 +69,17 @@ class ApiService {
       },
       social: {
         twitter: '@digitalnomad',
+        linkedin: '',
+        github: '',
         website: 'https://example.com'
       }
     }
+  }
+
+  async updateUserProfile(walletAddress: string, profile: UserProfile): Promise<UserProfile> {
+    // 黑客松阶段存储到localStorage
+    localStorage.setItem(`profile_${walletAddress}`, JSON.stringify(profile))
+    return profile
   }
 
   async generateAIContent(prompt: string, type: 'title' | 'description' | 'keywords' | 'social'): Promise<string> {
@@ -80,13 +95,10 @@ class ApiService {
   }
 
   private async getMockProducts(): Promise<Web3Product[]> {
-    // 先尝试从localStorage获取
-    const stored = localStorage.getItem('workwork_products')
-    if (stored) {
-      return JSON.parse(stored)
-    }
+    // Clear old data and always use fresh mock data for testing
+    localStorage.removeItem('workwork_products')
 
-    // 返回默认模拟数据
+    // Return default mock data
     const mockProducts: Web3Product[] = [
       {
         id: '1',
@@ -160,7 +172,7 @@ class ApiService {
           }
         },
         stats: {
-          views: 890,
+          views: 2340,
           purchases: 156,
           rating: 4.9,
           reviews: 78
@@ -171,6 +183,88 @@ class ApiService {
         status: 'published',
         createdAt: '2024-01-10T08:20:00Z',
         updatedAt: '2024-01-18T12:30:00Z'
+      },
+      {
+        id: '3',
+        title: 'AI Automation for Digital Nomads',
+        description: 'Learn to automate your workflow using AI tools and increase productivity while traveling.',
+        price: 149,
+        currency: 'USDC',
+        category: 'ai',
+        files: [
+          { name: 'automation-toolkit.zip', url: '/files/ai-tools.zip', type: 'application/zip' }
+        ],
+        coverImage: '/project-image.png',
+        seller: {
+          walletAddress: '0x456...def',
+          username: 'AI Nomad Expert',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ainomad',
+          verified: true
+        },
+        aiGenerated: {
+          keywords: ['ai', 'automation', 'productivity', 'nomad', 'workflow'],
+          socialPosts: {
+            twitter: '🤖 New AI automation course for digital nomads! Work smarter, not harder. #AI #DigitalNomad #Productivity'
+          },
+          seoMeta: {
+            title: 'AI Automation for Digital Nomads - Boost Your Productivity',
+            description: 'Master AI automation tools to streamline your remote work and boost productivity as a digital nomad.',
+            keywords: ['ai automation', 'digital nomad', 'productivity', 'remote work']
+          }
+        },
+        stats: {
+          views: 850,
+          purchases: 67,
+          rating: 4.6,
+          reviews: 32
+        },
+        blockchain: {
+          network: 'ethereum'
+        },
+        status: 'published',
+        createdAt: '2024-01-12T14:15:00Z',
+        updatedAt: '2024-01-25T09:20:00Z'
+      },
+      {
+        id: '4',
+        title: 'Freelance Business Blueprint',
+        description: 'Complete guide to building a successful freelance business from anywhere in the world.',
+        price: 99,
+        currency: 'USDT',
+        category: 'education',
+        files: [
+          { name: 'business-blueprint.pdf', url: '/files/blueprint.pdf', type: 'application/pdf' }
+        ],
+        coverImage: '/project-image.png',
+        seller: {
+          walletAddress: '0x789...ghi',
+          username: 'Freelance Guru',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=freelance',
+          verified: false
+        },
+        aiGenerated: {
+          keywords: ['freelance', 'business', 'remote work', 'entrepreneurship'],
+          socialPosts: {
+            twitter: '💼 New freelance business blueprint! Learn to build a 6-figure remote business. #Freelance #RemoteWork #Business'
+          },
+          seoMeta: {
+            title: 'Freelance Business Blueprint - Build Your Remote Empire',
+            description: 'Complete guide to starting and scaling a successful freelance business from anywhere.',
+            keywords: ['freelance business', 'remote work', 'entrepreneurship', 'digital nomad']
+          }
+        },
+        stats: {
+          views: 3200,
+          purchases: 234,
+          rating: 4.7,
+          reviews: 156
+        },
+        blockchain: {
+          network: 'base'
+        },
+        status: 'published',
+        createdAt: '2024-01-05T11:00:00Z',
+        updatedAt: '2024-01-22T16:45:00Z'
       }
     ]
 

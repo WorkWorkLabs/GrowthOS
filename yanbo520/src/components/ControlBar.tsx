@@ -1,19 +1,17 @@
 'use client'
 
-import { useState } from 'react'
 import { FilterType } from '@/types'
 import { FILTER_OPTIONS } from '@/lib/constants'
 
 interface ControlBarProps {
   onFilterChange?: (filter: FilterType) => void
   onCreateProject?: () => void
+  activeFilter?: FilterType
 }
 
-export function ControlBar({ onFilterChange, onCreateProject }: ControlBarProps) {
-  const [activeFilter, setActiveFilter] = useState<FilterType>('time')
+export function ControlBar({ onFilterChange, onCreateProject, activeFilter = 'time' }: ControlBarProps) {
 
   const handleFilterClick = (filter: FilterType) => {
-    setActiveFilter(filter)
     onFilterChange?.(filter)
   }
 
@@ -23,7 +21,7 @@ export function ControlBar({ onFilterChange, onCreateProject }: ControlBarProps)
         onClick={onCreateProject}
         className="bg-primary text-text-inverse px-4 py-2 rounded-md text-md font-medium shadow-button hover:bg-blue-500 transition-colors"
       >
-        Create My Project
+Create Project
       </button>
 
       <div className="bg-white rounded-md p-1 shadow-button flex">

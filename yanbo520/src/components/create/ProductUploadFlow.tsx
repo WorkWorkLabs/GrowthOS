@@ -1,0 +1,140 @@
+'use client'
+
+import { useState } from 'react'
+import { FileUploadStep } from './FileUploadStep'
+import { AIGenerationStep } from './AIGenerationStep'
+import { PreviewStep } from './PreviewStep'
+import { PublishStep } from './PublishStep'
+
+export type UploadData = {
+  uploadType: 'readme' | 'zip' | 'github' | 'video' | null
+  files: File[]
+  githubUrl: string
+  videoUrl: string
+  readmeContent: string
+}
+
+export type AIGeneratedContent = {
+  title: string
+  description: string
+  marketingCopy: string
+  keywords: string[]
+  socialPosts: {
+    twitter: string
+    linkedin: string
+  }
+  price: number
+  currency: string
+  category: string
+}
+
+export type ProductData = UploadData & {
+  aiContent: AIGeneratedContent | null
+  isGenerating: boolean
+}
+
+export function ProductUploadFlow() {
+  const [currentStep, setCurrentStep] = useState(1)
+  const [productData, setProductData] = useState<ProductData>({
+    uploadType: null,
+    files: [],
+    githubUrl: '',
+    videoUrl: '',
+    readmeContent: '',
+    aiContent: null,
+    isGenerating: false
+  })
+
+  const updateProductData = (updates: Partial<ProductData>) => {
+    setProductData(prev => ({ ...prev, ...updates }))
+  }
+
+  const nextStep = () => {
+    setCurrentStep(prev => Math.min(prev + 1, 4))
+  }
+
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1))
+  }
+
+  const steps = [
+    { number: 1, title: 'Upload Content', description: 'Select your project files or links' },
+    { number: 2, title: 'AI Generation', description: 'Generate product content with AI' },
+    { number: 3, title: 'Preview & Edit', description: 'Review and customize your product' },
+    { number: 4, title: 'Publish', description: 'Confirm and publish to platform' }
+  ]
+
+  return (
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Progress Steps */}
+      <div className="px-8 py-6 bg-gray-50 border-b">
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => (
+            <div key={step.number} className="flex items-center">
+              <div className={`
+                flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold
+                ${currentStep >= step.number 
+                  ? 'bg-primary text-white' 
+                  : 'bg-gray-200 text-gray-500'
+                }
+              `}>
+                {step.number}
+              </div>
+              <div className="ml-3">
+                <div className={`font-medium ${
+                  currentStep >= step.number ? 'text-primary' : 'text-gray-500'
+                }`}>
+                  {step.title}
+                </div>
+                <div className="text-sm text-gray-500">{step.description}</div>
+              </div>
+              {index < steps.length - 1 && (
+                <div className={`
+                  w-16 h-1 mx-6 rounded
+                  ${currentStep > step.number ? 'bg-primary' : 'bg-gray-200'}
+                `} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step Content */}
+      <div className="p-8">
+        {currentStep === 1 && (
+          <FileUploadStep 
+            data={productData}
+            onUpdate={updateProductData}
+            onNext={nextStep}
+          />
+        )}
+        
+        {currentStep === 2 && (
+          <AIGenerationStep 
+            data={productData}
+            onUpdate={updateProductData}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        )}
+        
+        {currentStep === 3 && (
+          <PreviewStep 
+            data={productData}
+            onUpdate={updateProductData}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        )}
+        
+        {currentStep === 4 && (
+          <PublishStep 
+            data={productData}
+            onUpdate={updateProductData}
+            onPrev={prevStep}
+          />
+        )}
+      </div>
+    </div>
+  )
+}

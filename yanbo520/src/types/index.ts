@@ -14,6 +14,10 @@ export interface Project {
   currency: string
   image?: string
   tags: Tag[]
+  views?: number
+  likes?: number
+  rating?: number
+  verified?: boolean
 }
 
 export type FilterType = 'time' | 'price' | 'likes' | 'views'

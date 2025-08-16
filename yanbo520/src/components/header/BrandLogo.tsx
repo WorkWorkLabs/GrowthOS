@@ -3,7 +3,11 @@ import { BRAND_LOGO_URL } from '@/lib/constants'
 
 export function BrandLogo() {
   return (
-    <div className="rounded-full px-2 py-1 h-10 flex items-center" style={{backgroundColor: '#38b6ff'}}>
+    <button 
+      onClick={() => window.location.href = '/'}
+      className="rounded-full px-2 py-1 h-10 flex items-center hover:opacity-80 transition-opacity cursor-pointer" 
+      style={{backgroundColor: '#38b6ff'}}
+    >
       <Image 
         src={BRAND_LOGO_URL}
         alt="Work Work Logo" 
@@ -14,6 +18,6 @@ export function BrandLogo() {
         priority
         unoptimized
       />
-    </div>
+    </button>
   )
 }

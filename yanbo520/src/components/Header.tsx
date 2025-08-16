@@ -12,7 +12,7 @@ export function Header() {
   const { isConnected, address } = useWallet()
 
   const menuItems: DropdownMenuItem[] = [
-    { id: 'profile', label: 'Profile', action: () => console.log('Profile clicked') },
+    { id: 'profile', label: 'Profile', action: () => window.location.href = '/profile' },
     { id: 'orders', label: 'My Orders', action: () => console.log('Orders clicked') },
     { id: 'projects', label: 'My Projects', action: () => console.log('Projects clicked') },
     { id: 'settings', label: 'Settings', action: () => console.log('Settings clicked') },

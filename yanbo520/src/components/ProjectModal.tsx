@@ -52,14 +52,14 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
           />
           
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-text-primary mb-2">项目描述</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">Description</h3>
             <p className="text-text-primary text-sm leading-relaxed whitespace-pre-line">
               {project.description}
             </p>
           </div>
           
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-text-primary mb-2">标签</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">Tags</h3>
             <div className="flex flex-wrap gap-2">
               {project.tags.map((tag, index) => (
                 <span
