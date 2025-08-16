@@ -109,3 +109,32 @@ body {
     backdrop-filter: blur(43.5px);
   }
 }
+
+/* 模态框动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpAndScale {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideUpAndScale {
+  animation: slideUpAndScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}

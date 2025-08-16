@@ -16,11 +16,11 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
 
   const modalContent = (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+      className="fixed inset-0 backdrop-blur-sm bg-white/20 flex items-center justify-center z-50 animate-fadeIn" 
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-lg max-w-2xl max-h-[80vh] overflow-y-auto m-4" 
+        className="bg-white rounded-lg max-w-2xl max-h-[80vh] overflow-y-auto m-4 animate-slideUpAndScale" 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 bg-white border-b p-4 flex items-start justify-between">
