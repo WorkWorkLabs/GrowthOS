@@ -1,16 +1,10 @@
-import { Web3Product, PaymentTransaction, UserProfile } from '@/types/web3'
+import { Web3Product, UserProfile } from '@/types/web3'
 
 // 模拟API服务 - 黑客松阶段可以用本地数据，后期替换为真实API
 class ApiService {
   private baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api'
 
-  async getProducts(filters?: {
-    category?: string
-    search?: string
-    sort?: 'price' | 'rating' | 'newest'
-    limit?: number
-    offset?: number
-  }): Promise<Web3Product[]> {
+  async getProducts(): Promise<Web3Product[]> {
     // 黑客松阶段返回模拟数据
     return this.getMockProducts()
   }

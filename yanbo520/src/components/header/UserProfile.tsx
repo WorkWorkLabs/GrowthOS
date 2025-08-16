@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import Image from 'next/image'
 import { User, DropdownMenuItem } from '@/types'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useWallet } from '@/hooks/useWallet'
@@ -33,9 +34,11 @@ export function UserProfile({
         onClick={onToggleDropdown}
         className="bg-white rounded-full pl-2 pr-12 py-1 h-10 flex items-start gap-2 hover:bg-gray-50 transition-colors min-w-[180px]"
       >
-        <img 
+        <Image 
           src={user.avatar}
           alt="User Avatar" 
+          width={32}
+          height={32}
           className="w-8 h-8 rounded-full object-cover mt-0.5"
         />
         <div className="flex flex-col items-start justify-center flex-1">

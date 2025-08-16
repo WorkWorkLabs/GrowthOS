@@ -16,7 +16,7 @@ const convertWeb3ProductToProject = (product: Web3Product) => ({
   price: product.price,
   currency: product.currency,
   image: product.coverImage,
-  tags: [{ label: product.category, type: product.category as any }]
+  tags: [{ label: product.category, type: product.category as 'ai' | 'crypto' | 'education' }]
 })
 
 export default function Home() {

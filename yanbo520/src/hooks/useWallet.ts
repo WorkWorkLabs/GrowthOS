@@ -20,13 +20,13 @@ export function useWallet() {
   // 检查是否已连接
   useEffect(() => {
     checkConnection()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkConnection = async () => {
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' })
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[]
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' }) as string
         
         if (accounts.length > 0) {
           setWallet(prev => ({
@@ -56,8 +56,8 @@ export function useWallet() {
     try {
       const accounts = await window.ethereum.request({ 
         method: 'eth_requestAccounts' 
-      })
-      const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+      }) as string[]
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' }) as string
 
       setWallet(prev => ({
         ...prev,
@@ -86,10 +86,10 @@ export function useWallet() {
 
   const getBalance = async (address: string) => {
     try {
-      const balance = await window.ethereum.request({
+      const balance = await window.ethereum!.request({
         method: 'eth_getBalance',
         params: [address, 'latest']
-      })
+      }) as string
       
       const balanceInEth = (parseInt(balance, 16) / 1e18).toFixed(4)
       setWallet(prev => ({ ...prev, balance: balanceInEth }))
@@ -100,13 +100,13 @@ export function useWallet() {
 
   const switchNetwork = async (chainId: number) => {
     try {
-      await window.ethereum.request({
+      await window.ethereum!.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: `0x${chainId.toString(16)}` }]
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 如果网络不存在，尝试添加
-      if (error.code === 4902) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 4902) {
         // 这里可以添加网络配置
         console.log('Network not found, please add it manually')
       }
@@ -126,9 +126,9 @@ export function useWallet() {
 declare global {
   interface Window {
     ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>
-      on: (event: string, callback: (...args: any[]) => void) => void
-      removeListener: (event: string, callback: (...args: any[]) => void) => void
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+      on: (event: string, callback: (...args: unknown[]) => void) => void
+      removeListener: (event: string, callback: (...args: unknown[]) => void) => void
     }
   }
 }

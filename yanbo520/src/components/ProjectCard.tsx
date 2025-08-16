@@ -1,11 +1,11 @@
 'use client'
 
-import { Project } from '@/types'
+import type { Project } from '@/types'
 import { TAG_COLORS, DEFAULT_PROJECT_IMAGE } from '@/lib/constants'
 import { useModal } from '@/hooks/useModal'
 import { ProjectModal } from './ProjectModal'
 
-export function ProjectCard(project: ProjectCardProps) {
+export function ProjectCard(project: Project) {
   const modal = useModal()
 
   return (
