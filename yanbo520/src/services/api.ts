@@ -1,4 +1,5 @@
 import { Web3Product, UserProfile } from '@/types/web3'
+import { userService } from './userService'
 
 // 模拟API服务 - 黑客松阶段可以用本地数据，后期替换为真实API
 class ApiService {
@@ -43,43 +44,11 @@ class ApiService {
   }
 
   async getUserProfile(walletAddress: string): Promise<UserProfile | null> {
-    // 先尝试从localStorage获取自定义用户数据
-    const stored = localStorage.getItem(`profile_${walletAddress}`)
-    if (stored) {
-      return JSON.parse(stored)
-    }
-
-    // 黑客松阶段返回模拟用户数据
-    return {
-      walletAddress,
-      username: 'Digital Nomad',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + walletAddress,
-      bio: 'Building the future of work with Web3 technologies',
-      email: '',
-      stats: {
-        totalSales: 1250,
-        totalProducts: 8,
-        rating: 4.8,
-        joinedAt: '2024-01-15'
-      },
-      verification: {
-        isVerified: true,
-        kycCompleted: false,
-        badgeLevel: 'silver'
-      },
-      social: {
-        twitter: '@digitalnomad',
-        linkedin: '',
-        github: '',
-        website: 'https://example.com'
-      }
-    }
+    return await userService.getUserProfile(walletAddress)
   }
 
   async updateUserProfile(walletAddress: string, profile: UserProfile): Promise<UserProfile> {
-    // 黑客松阶段存储到localStorage
-    localStorage.setItem(`profile_${walletAddress}`, JSON.stringify(profile))
-    return profile
+    return await userService.updateUserProfile(walletAddress, profile)
   }
 
   async generateAIContent(prompt: string, type: 'title' | 'description' | 'keywords' | 'social'): Promise<string> {
