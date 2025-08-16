@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ProductData, AIGeneratedContent } from './ProductUploadFlow'
 import { apiService } from '@/services/api'
+import { Bot, Loader2, CheckCircle, RotateCcw } from 'lucide-react'
 
 interface AIGenerationStepProps {
   data: ProductData
@@ -112,7 +113,9 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
       {/* Generation Status */}
       {!hasContent && !isGenerating && (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">🤖</div>
+          <div className="mb-4">
+            <Bot className="w-16 h-16 mx-auto text-blue-500" />
+          </div>
           <h3 className="text-xl font-semibold mb-2">Ready to Generate Content</h3>
           <p className="text-gray-600 mb-6">
             Our AI will analyze your project and create professional product content including title, description, and marketing copy.
@@ -121,7 +124,8 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
             onClick={generateContent}
             className="bg-primary text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
           >
-            🚀 Generate AI Content
+            <Bot className="w-5 h-5 mr-2" />
+            Generate AI Content
           </button>
         </div>
       )}
@@ -129,7 +133,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
       {/* Generation Progress */}
       {isGenerating && (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+          <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary mb-4" />
           <h3 className="text-xl font-semibold mb-2">Generating Content...</h3>
           <p className="text-gray-600">{generationStep}</p>
           <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
@@ -142,12 +146,16 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
       {hasContent && data.aiContent && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-green-600">✓ Content Generated Successfully</h3>
+            <h3 className="text-xl font-semibold text-green-600 flex items-center space-x-2">
+              <CheckCircle className="w-6 h-6" />
+              <span>Content Generated Successfully</span>
+            </h3>
             <button
               onClick={generateContent}
               className="text-primary hover:text-blue-600 font-medium"
             >
-              🔄 Regenerate
+              <RotateCcw className="w-4 h-4 mr-1" />
+              Regenerate
             </button>
           </div>
 

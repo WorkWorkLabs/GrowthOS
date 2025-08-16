@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ProductData } from './ProductUploadFlow'
+import { Eye, Heart, Star, CheckCircle } from 'lucide-react'
 
 interface PreviewStepProps {
   data: ProductData
@@ -109,21 +110,21 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
               <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 shrink-0">
                 <div className="flex items-center space-x-3 text-xs text-text-secondary">
                   <div className="flex items-center space-x-1">
-                    <span>👁️</span>
+                    <Eye className="w-3 h-3" />
                     <span>0</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <span>❤️</span>
+                    <Heart className="w-3 h-3" />
                     <span>0</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <span>⭐</span>
+                    <Star className="w-3 h-3" />
                     <span>0.0</span>
                   </div>
                 </div>
                 
                 <div className="text-green-500 text-sm" title="Verified Creator">
-                  <span>✓</span>
+                  <CheckCircle className="w-4 h-4" />
                 </div>
               </div>
             </div>

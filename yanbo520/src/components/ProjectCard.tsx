@@ -4,6 +4,7 @@ import type { Project } from '@/types'
 import { TAG_COLORS, DEFAULT_PROJECT_IMAGE } from '@/lib/constants'
 import { useModal } from '@/hooks/useModal'
 import { ProjectModal } from './ProjectModal'
+import { Eye, Heart, Star, CheckCircle } from 'lucide-react'
 
 export function ProjectCard(project: Project) {
   const modal = useModal()
@@ -82,21 +83,21 @@ export function ProjectCard(project: Project) {
           <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 shrink-0">
             <div className="flex items-center space-x-3 text-xs text-text-secondary">
               <div className="flex items-center space-x-1">
-                <span>👁️</span>
+                <Eye className="w-3 h-3" />
                 <span>{project.views}</span>
               </div>
               <div className="flex items-center space-x-1">
-                <span>❤️</span>
+                <Heart className="w-3 h-3" />
                 <span>{project.likes}</span>
               </div>
               <div className="flex items-center space-x-1">
-                <span>⭐</span>
+                <Star className="w-3 h-3" />
                 <span>{project.rating ? project.rating.toFixed(1) : '0.0'}</span>
               </div>
             </div>
             
             <div className="text-green-500 text-sm" title="Verified Creator">
-              <span>✓</span>
+              <CheckCircle className="w-4 h-4" />
             </div>
           </div>
         </div>

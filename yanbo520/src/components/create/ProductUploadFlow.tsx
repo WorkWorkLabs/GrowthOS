@@ -130,7 +130,6 @@ export function ProductUploadFlow() {
         {currentStep === 4 && (
           <PublishStep 
             data={productData}
-            onUpdate={updateProductData}
             onPrev={prevStep}
           />
         )}

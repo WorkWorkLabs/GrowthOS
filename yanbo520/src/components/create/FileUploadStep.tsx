@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { ProductData } from './ProductUploadFlow'
+import { FileText, Package, Github, Video, CheckCircle } from 'lucide-react'
 
 interface FileUploadStepProps {
   data: ProductData
@@ -81,14 +82,17 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
           onDrop={handleDrop}
         >
           <div className="text-center">
-            <div className="text-4xl mb-4">📄</div>
+            <div className="mb-4">
+              <FileText className="w-12 h-12 mx-auto text-gray-400" />
+            </div>
             <h3 className="font-semibold mb-2">README File</h3>
             <p className="text-sm text-gray-600 mb-4">
               Upload your project&apos;s README.md file
             </p>
             {data.uploadType === 'readme' && data.files.length > 0 && (
-              <div className="text-sm text-primary font-medium">
-                ✓ {data.files[0].name}
+              <div className="text-sm text-primary font-medium flex items-center space-x-1">
+                <CheckCircle className="w-4 h-4" />
+                <span>{data.files[0].name}</span>
               </div>
             )}
           </div>
@@ -109,14 +113,17 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
           }}
         >
           <div className="text-center">
-            <div className="text-4xl mb-4">📦</div>
+            <div className="mb-4">
+              <Package className="w-12 h-12 mx-auto text-gray-400" />
+            </div>
             <h3 className="font-semibold mb-2">Project Archive</h3>
             <p className="text-sm text-gray-600 mb-4">
               Upload a ZIP file of your entire project
             </p>
             {data.uploadType === 'zip' && data.files.length > 0 && (
-              <div className="text-sm text-primary font-medium">
-                ✓ {data.files[0].name}
+              <div className="text-sm text-primary font-medium flex items-center space-x-1">
+                <CheckCircle className="w-4 h-4" />
+                <span>{data.files[0].name}</span>
               </div>
             )}
           </div>
@@ -134,7 +141,9 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
           onClick={() => onUpdate({ uploadType: 'github' })}
         >
           <div className="text-center">
-            <div className="text-4xl mb-4">🐙</div>
+            <div className="mb-4">
+              <Github className="w-12 h-12 mx-auto text-gray-400" />
+            </div>
             <h3 className="font-semibold mb-2">GitHub Repository</h3>
             <p className="text-sm text-gray-600 mb-4">
               Link to your GitHub repository
@@ -155,7 +164,9 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
           onClick={() => onUpdate({ uploadType: 'video' })}
         >
           <div className="text-center">
-            <div className="text-4xl mb-4">🎥</div>
+            <div className="mb-4">
+              <Video className="w-12 h-12 mx-auto text-gray-400" />
+            </div>
             <h3 className="font-semibold mb-2">Demo Video</h3>
             <p className="text-sm text-gray-600 mb-4">
               Link to your project demo video

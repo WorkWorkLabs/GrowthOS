@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { UserProfile } from '@/types/web3'
 import { useWallet } from '@/hooks/useWallet'
+import { CheckCircle, Star, X, Edit } from 'lucide-react'
 
 interface ProfileHeaderProps {
   profile: UserProfile
@@ -28,7 +29,7 @@ export function ProfileHeader({ profile, isEditing, onToggleEdit }: ProfileHeade
             />
             {profile.verification.isVerified && (
               <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center border-2 border-white shadow-md">
-                <span className="text-white text-sm font-bold">✓</span>
+                <CheckCircle className="w-4 h-4 text-white" />
               </div>
             )}
           </div>
@@ -45,7 +46,10 @@ export function ProfileHeader({ profile, isEditing, onToggleEdit }: ProfileHeade
                 profile.verification.badgeLevel === 'silver' ? 'bg-gray-100 text-gray-800' :
                 'bg-orange-100 text-orange-800'
               }`}>
-                ⭐ {profile.verification.badgeLevel.toUpperCase()}
+                <div className="flex items-center space-x-1">
+                  <Star className="w-4 h-4 text-yellow-400" />
+                  <span>{profile.verification.badgeLevel.toUpperCase()}</span>
+                </div>
               </span>
             </div>
             
@@ -128,7 +132,17 @@ export function ProfileHeader({ profile, isEditing, onToggleEdit }: ProfileHeade
                 : 'bg-primary text-white hover:bg-blue-600 shadow-button hover:shadow-lg'
             }`}
           >
-            {isEditing ? '✕ Cancel' : '✏️ Edit Profile'}
+            {isEditing ? (
+              <div className="flex items-center space-x-1">
+                <X className="w-4 h-4" />
+                <span>Cancel</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                <Edit className="w-4 h-4" />
+                <span>Edit Profile</span>
+              </div>
+            )}
           </button>
         </div>
       </div>

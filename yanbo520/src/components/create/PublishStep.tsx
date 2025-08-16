@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ProductData } from './ProductUploadFlow'
 import { useRouter } from 'next/navigation'
+import { PartyPopper, AlertTriangle, Rocket, Loader2 } from 'lucide-react'
 
 interface PublishStepProps {
   data: ProductData
@@ -39,7 +40,9 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
   if (publishSuccess) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-6">🎉</div>
+        <div className="mb-6">
+          <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
+        </div>
         <h2 className="text-3xl font-bold text-green-600 mb-4">Product Published Successfully!</h2>
         <p className="text-gray-600 mb-8 max-w-md mx-auto">
           Your product is now live on the platform. Users can discover and purchase your content.
@@ -47,7 +50,7 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
         
         <div className="space-y-4">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 max-w-md mx-auto">
-            <h3 className="font-semibold text-green-800 mb-2">What's Next?</h3>
+            <h3 className="font-semibold text-green-800 mb-2">What&apos;s Next?</h3>
             <ul className="text-sm text-green-700 space-y-1 text-left">
               <li>• Share your product on social media</li>
               <li>• Monitor sales and analytics</li>
@@ -195,7 +198,7 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
       {/* Important Notes */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div className="flex">
-          <div className="text-yellow-600 mr-3">⚠️</div>
+          <AlertTriangle className="text-yellow-600 mr-3 w-5 h-5 flex-shrink-0" />
           <div>
             <h4 className="font-semibold text-yellow-800 mb-1">Important Notes</h4>
             <ul className="text-sm text-yellow-700 space-y-1">
@@ -215,7 +218,8 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
             onClick={handlePublish}
             className="bg-gradient-to-r from-primary to-blue-600 text-white px-12 py-4 rounded-lg font-bold text-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all shadow-lg"
           >
-            🚀 Publish Product
+            <Rocket className="w-5 h-5 mr-2" />
+            Publish Product
           </button>
           <p className="text-sm text-gray-500 mt-2">
             Your product will be live immediately after publishing
@@ -223,7 +227,7 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
         </div>
       ) : (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+          <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary mb-4" />
           <h3 className="text-xl font-semibold mb-2">Publishing Your Product...</h3>
           <p className="text-gray-600">Please wait while we prepare your product for the platform</p>
         </div>

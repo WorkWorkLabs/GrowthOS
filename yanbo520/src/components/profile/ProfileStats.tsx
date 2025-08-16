@@ -1,6 +1,7 @@
 'use client'
 
 import { UserProfile } from '@/types/web3'
+import { Package, Star, PartyPopper, CheckCircle, Circle } from 'lucide-react'
 
 interface ProfileStatsProps {
   profile: UserProfile
@@ -55,7 +56,7 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
             </p>
           </div>
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <span className="text-blue-600 text-xl">📦</span>
+            <Package className="w-6 h-6 text-blue-600" />
           </div>
         </div>
         <div className="mt-4">
@@ -85,14 +86,14 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
                         : 'text-gray-300'
                     }`}
                   >
-                    ⭐
+                    <Star className="w-4 h-4 text-yellow-500" />
                   </span>
                 ))}
               </div>
             </div>
           </div>
           <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-            <span className="text-yellow-600 text-xl">⭐</span>
+            <Star className="w-6 h-6 text-yellow-600" />
           </div>
         </div>
         <div className="mt-4">
@@ -112,7 +113,7 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
             </p>
           </div>
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-            <span className="text-purple-600 text-xl">🎉</span>
+            <PartyPopper className="w-6 h-6 text-purple-600" />
           </div>
         </div>
         <div className="mt-4">
@@ -135,7 +136,11 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
               <span className={`text-sm ${
                 profile.verification.isVerified ? 'text-green-600' : 'text-gray-400'
               }`}>
-                {profile.verification.isVerified ? '✓' : '○'}
+                {profile.verification.isVerified ? (
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Circle className="w-4 h-4 text-gray-400" />
+                )}
               </span>
             </div>
             <div>
@@ -153,7 +158,11 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
               <span className={`text-sm ${
                 profile.verification.kycCompleted ? 'text-green-600' : 'text-gray-400'
               }`}>
-                {profile.verification.kycCompleted ? '✓' : '○'}
+                {profile.verification.kycCompleted ? (
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Circle className="w-4 h-4 text-gray-400" />
+                )}
               </span>
             </div>
             <div>

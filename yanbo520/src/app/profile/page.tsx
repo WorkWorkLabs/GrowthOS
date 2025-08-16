@@ -8,6 +8,7 @@ import { Header } from '@/components/Header'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { ProfileForm } from '@/components/profile/ProfileForm'
 import { ProfileStats } from '@/components/profile/ProfileStats'
+import { Link } from 'lucide-react'
 
 export default function ProfilePage() {
   const { isConnected, address } = useWallet()
@@ -39,7 +40,7 @@ export default function ProfilePage() {
         <div className="max-w-2xl mx-auto px-6 py-16">
           <div className="bg-white rounded-xl p-8 shadow-card text-center">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-3xl">🔗</span>
+              <Link className="w-10 h-10 text-gray-400" />
             </div>
             <h2 className="text-2xl font-bold text-text-primary mb-4">
               Connect Your Wallet
