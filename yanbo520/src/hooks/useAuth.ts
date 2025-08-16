@@ -127,7 +127,17 @@ export function useAuthProvider() {
 
     if (error) {
       console.error('Supabase auth error:', error)
-      throw new Error(`Authentication failed: ${error.message}`)
+      
+      // 处理特定错误类型
+      if (error.message.includes('User already registered')) {
+        throw new Error('This email is already registered. Please try signing in instead.')
+      } else if (error.message.includes('Invalid email')) {
+        throw new Error('Please enter a valid email address.')
+      } else if (error.message.includes('Password')) {
+        throw new Error('Password must be at least 6 characters long.')
+      } else {
+        throw new Error(`Registration failed: ${error.message}`)
+      }
     }
 
     if (data.user) {
@@ -145,7 +155,20 @@ export function useAuthProvider() {
       password,
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase signin error:', error)
+      
+      // 处理特定错误类型
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Invalid email or password. Please check your credentials and try again.')
+      } else if (error.message.includes('Email not confirmed')) {
+        throw new Error('Please confirm your email address before signing in.')
+      } else if (error.message.includes('Too many requests')) {
+        throw new Error('Too many login attempts. Please try again later.')
+      } else {
+        throw new Error(`Sign in failed: ${error.message}`)
+      }
+    }
   }
 
   const signOut = async () => {
