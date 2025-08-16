@@ -71,9 +71,21 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
     }
   }
 
+  // 验证Solana地址格式
+  const isValidSolanaAddress = (address: string): boolean => {
+    // Solana地址是Base58编码的44个字符
+    const solanaAddressRegex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+    return solanaAddressRegex.test(address.trim())
+  }
+
   const handleConnectWallet = async () => {
     if (!walletAddress.trim()) {
-      alert('Please enter a wallet address')
+      alert('Please enter a Solana wallet address')
+      return
+    }
+
+    if (!isValidSolanaAddress(walletAddress)) {
+      alert('Please enter a valid Solana address. Solana addresses are 32-44 characters long and use Base58 encoding.')
       return
     }
 
@@ -81,10 +93,14 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
     try {
       await connectWallet(walletAddress.trim())
       setWalletAddress('')
-      alert('Wallet connected successfully!')
+      alert('Solana wallet connected successfully!')
     } catch (error) {
       console.error('Failed to connect wallet:', error)
-      alert('Failed to connect wallet. Please try again.')
+      if (error instanceof Error && error.message.includes('duplicate')) {
+        alert('This Solana address is already connected to another account.')
+      } else {
+        alert('Failed to connect wallet. Please try again.')
+      }
     } finally {
       setConnectingWallet(false)
     }
@@ -217,7 +233,7 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
 
         {/* Wallet Connection */}
         <div>
-          <h3 className="text-lg font-medium text-text-primary mb-4">Crypto Wallet</h3>
+          <h3 className="text-lg font-medium text-text-primary mb-4">Solana Wallet</h3>
           <div className="bg-gray-50 rounded-lg p-4">
             {profile.walletAddress ? (
               <div className="flex items-center justify-between">
@@ -228,7 +244,7 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
                     <p className="text-xs text-gray-500 font-mono">
                       {profile.walletAddress.slice(0, 6)}...{profile.walletAddress.slice(-4)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Wallet cannot be changed once connected</p>
+                    <p className="text-xs text-gray-400 mt-1">Solana wallet cannot be changed once connected</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -240,14 +256,14 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm text-gray-600">Connect your crypto wallet (optional)</p>
+                <p className="text-sm text-gray-600">Connect your Solana wallet (optional)</p>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={walletAddress}
                     onChange={(e) => setWalletAddress(e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="0x... wallet address"
+                    placeholder="Solana address (e.g., 5Qp...XYZ)"
                   />
                   <button
                     type="button"
