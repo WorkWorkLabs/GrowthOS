@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { UserProfile } from '@/types/web3'
 import { useAuth } from '@/providers/AuthProvider'
-import { MessageCircle, CreditCard, Linkedin, Globe, CheckCircle, Lock, AlertCircle } from 'lucide-react'
+import { MessageCircle, CreditCard, Linkedin, Globe, CheckCircle, Lock, AlertCircle, Shield, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface ProfileFormProps {
@@ -23,6 +23,13 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
     alipay: profile.social?.alipay || '',
     linkedin: profile.social?.linkedin || '',
     website: profile.social?.website || '',
+    creditCard: {
+      number: '',
+      expiry: '',
+      cvv: '',
+      holderName: '',
+      type: '' as 'visa' | 'master' | 'jcb' | 'unionpay' | ''
+    }
   })
   
   const [loading, setLoading] = useState(false)
@@ -30,6 +37,7 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
   const [connectingWallet, setConnectingWallet] = useState(false)
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
   const [validating, setValidating] = useState<{[key: string]: boolean}>({})
+  const [showCreditCard, setShowCreditCard] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,6 +84,54 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
     // Solana地址是Base58编码的44个字符
     const solanaAddressRegex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
     return solanaAddressRegex.test(address.trim())
+  }
+
+  // 验证信用卡号格式并检测卡类型
+  const validateCreditCard = (number: string): { isValid: boolean; type: 'visa' | 'master' | 'jcb' | 'unionpay' | '' } => {
+    const cleanNumber = number.replace(/\s/g, '')
+    
+    // 卡类型检测正则
+    const cardTypes = {
+      visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
+      master: /^5[1-5][0-9]{14}$/,
+      jcb: /^35(?:2[89]|[3-8][0-9])[0-9]{12}$/,
+      unionpay: /^62[0-9]{14,17}$/
+    }
+    
+    let detectedType: 'visa' | 'master' | 'jcb' | 'unionpay' | '' = ''
+    let isValid = false
+    
+    for (const [type, regex] of Object.entries(cardTypes)) {
+      if (regex.test(cleanNumber)) {
+        detectedType = type as 'visa' | 'master' | 'jcb' | 'unionpay'
+        isValid = true
+        break
+      }
+    }
+    
+    return { isValid, type: detectedType }
+  }
+
+  // 格式化信用卡号显示
+  const formatCardNumber = (number: string): string => {
+    const cleanNumber = number.replace(/\s/g, '')
+    return cleanNumber.replace(/(.{4})/g, '$1 ').trim()
+  }
+
+  // 验证到期日期格式 (MM/YY)
+  const isValidExpiry = (expiry: string): boolean => {
+    const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/
+    if (!expiryRegex.test(expiry)) return false
+    
+    const [month, year] = expiry.split('/')
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear() % 100
+    const currentMonth = currentDate.getMonth() + 1
+    
+    const expiryYear = parseInt(year)
+    const expiryMonth = parseInt(month)
+    
+    return expiryYear > currentYear || (expiryYear === currentYear && expiryMonth >= currentMonth)
   }
 
   const handleConnectWallet = async () => {
@@ -164,6 +220,92 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
     if (['wechat', 'alipay', 'linkedin', 'website'].includes(field) && value.trim()) {
       // 延迟验证，避免频繁请求
       setTimeout(() => validateSocialAccount(field, value), 500)
+    }
+  }
+
+  // 处理信用卡输入
+  const handleCreditCardChange = (field: string, value: string) => {
+    let processedValue = value
+    
+    if (field === 'number') {
+      // 格式化卡号，自动添加空格
+      processedValue = formatCardNumber(value.replace(/\D/g, ''))
+      
+      // 检测卡类型
+      const validation = validateCreditCard(processedValue)
+      setFormData(prev => ({
+        ...prev,
+        creditCard: {
+          ...prev.creditCard,
+          [field]: processedValue,
+          type: validation.type
+        }
+      }))
+      
+      // 验证卡号
+      if (processedValue.length >= 13 && !validation.isValid) {
+        setValidationErrors(prev => ({
+          ...prev,
+          creditCardNumber: 'Invalid credit card number'
+        }))
+      } else {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev }
+          delete newErrors.creditCardNumber
+          return newErrors
+        })
+      }
+    } else if (field === 'expiry') {
+      // 格式化到期日期 MM/YY
+      processedValue = value.replace(/\D/g, '').replace(/(\d{2})(\d{2})/, '$1/$2').substring(0, 5)
+      
+      setFormData(prev => ({
+        ...prev,
+        creditCard: { ...prev.creditCard, [field]: processedValue }
+      }))
+      
+      // 验证到期日期
+      if (processedValue.length === 5 && !isValidExpiry(processedValue)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          creditCardExpiry: 'Invalid or expired date'
+        }))
+      } else {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev }
+          delete newErrors.creditCardExpiry
+          return newErrors
+        })
+      }
+    } else if (field === 'cvv') {
+      // CVV只允许数字，限制长度
+      processedValue = value.replace(/\D/g, '').substring(0, 4)
+      
+      setFormData(prev => ({
+        ...prev,
+        creditCard: { ...prev.creditCard, [field]: processedValue }
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        creditCard: { ...prev.creditCard, [field]: value }
+      }))
+    }
+  }
+
+  // 获取卡类型图标和颜色
+  const getCardTypeInfo = (type: string) => {
+    switch (type) {
+      case 'visa':
+        return { name: 'Visa', color: 'text-blue-600', bg: 'bg-blue-50' }
+      case 'master':
+        return { name: 'MasterCard', color: 'text-red-600', bg: 'bg-red-50' }
+      case 'jcb':
+        return { name: 'JCB', color: 'text-green-600', bg: 'bg-green-50' }
+      case 'unionpay':
+        return { name: 'UnionPay', color: 'text-purple-600', bg: 'bg-purple-50' }
+      default:
+        return { name: '', color: 'text-gray-400', bg: 'bg-gray-50' }
     }
   }
 
@@ -413,6 +555,133 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Credit Card Information */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowCreditCard(!showCreditCard)}
+            className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <div className="flex items-center">
+              <Shield className="w-5 h-5 mr-2 text-green-600" />
+              <h3 className="text-lg font-medium text-text-primary">
+                Payment Information
+              </h3>
+              <span className="ml-2 text-sm text-gray-500">(Optional)</span>
+            </div>
+            {showCreditCard ? (
+              <ChevronUp className="w-5 h-5 text-gray-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-400" />
+            )}
+          </button>
+          
+          {showCreditCard && (
+            <div className="mt-4 bg-gray-50 rounded-lg p-6">
+            <p className="text-sm text-gray-600 mb-4">
+              Add your credit card for faster checkout. Your information is encrypted and secure.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Card Number */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Card Number
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.creditCard.number}
+                    onChange={(e) => handleCreditCardChange('number', e.target.value)}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-20 ${
+                      validationErrors.creditCardNumber ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="1234 5678 9012 3456"
+                    maxLength={19}
+                  />
+                  {formData.creditCard.type && (
+                    <div className={`absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-1 rounded text-xs font-medium ${getCardTypeInfo(formData.creditCard.type).bg} ${getCardTypeInfo(formData.creditCard.type).color}`}>
+                      {getCardTypeInfo(formData.creditCard.type).name}
+                    </div>
+                  )}
+                  {validationErrors.creditCardNumber && (
+                    <AlertCircle className="w-4 h-4 text-red-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
+                  )}
+                </div>
+                {validationErrors.creditCardNumber && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.creditCardNumber}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Supported: Visa, MasterCard, JCB, UnionPay
+                </p>
+              </div>
+
+              {/* Cardholder Name */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Cardholder Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.creditCard.holderName}
+                  onChange={(e) => handleCreditCardChange('holderName', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="John Doe"
+                />
+              </div>
+
+              {/* Expiry Date */}
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Expiry Date
+                </label>
+                <input
+                  type="text"
+                  value={formData.creditCard.expiry}
+                  onChange={(e) => handleCreditCardChange('expiry', e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                    validationErrors.creditCardExpiry ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="MM/YY"
+                  maxLength={5}
+                />
+                {validationErrors.creditCardExpiry && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.creditCardExpiry}</p>
+                )}
+              </div>
+
+              {/* CVV */}
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  CVV
+                </label>
+                <input
+                  type="password"
+                  value={formData.creditCard.cvv}
+                  onChange={(e) => handleCreditCardChange('cvv', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="123"
+                  maxLength={4}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  3-4 digits on the back of your card
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-start">
+                <Shield className="w-4 h-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+                <div className="text-xs text-blue-700">
+                  <p className="font-medium">Your payment information is secure</p>
+                  <p>We use industry-standard encryption and never store your CVV.</p>
+                </div>
+              </div>
+            </div>
+            </div>
+          )}
         </div>
 
         {/* Submit Buttons */}
