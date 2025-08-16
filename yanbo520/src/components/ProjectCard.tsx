@@ -19,7 +19,7 @@ export function ProjectCard(project: Project) {
         <div 
           className="h-[180px] w-full rounded-t-lg"
           style={{
-            backgroundImage: `url(${project.image || DEFAULT_PROJECT_IMAGE})`,
+            backgroundImage: `url(${project.image || project.image_url || DEFAULT_PROJECT_IMAGE})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'

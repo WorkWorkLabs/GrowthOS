@@ -44,7 +44,7 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
           <div 
             className="w-full h-64 rounded-lg mb-4"
             style={{
-              backgroundImage: `url(${project.image || DEFAULT_PROJECT_IMAGE})`,
+              backgroundImage: `url(${project.image || project.image_url || DEFAULT_PROJECT_IMAGE})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
