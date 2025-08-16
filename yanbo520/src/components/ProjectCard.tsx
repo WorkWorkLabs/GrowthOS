@@ -11,11 +11,11 @@ export function ProjectCard(project: Project) {
   return (
     <>
       <div 
-        className="w-[300px] h-[380px] bg-bg-primary rounded-lg shadow-card overflow-hidden flex flex-col hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
+        className="w-full max-w-[280px] h-[360px] bg-bg-primary rounded-lg shadow-card overflow-hidden flex flex-col hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
         onClick={modal.open}
       >
         <div 
-          className="h-[200px] w-full rounded-t-lg"
+          className="h-[180px] w-full rounded-t-lg"
           style={{
             backgroundImage: `url(${project.image || DEFAULT_PROJECT_IMAGE})`,
             backgroundSize: 'cover',
