@@ -7,7 +7,7 @@
 
 @theme inline {
   /* 主要颜色 */
-  --color-primary: #48A7DD;
+  --color-primary: #38B6FF;
   
   /* 文本颜色 */
   --color-text-primary: #000000;
@@ -62,11 +62,45 @@ body {
 }
 
 /* 添加文本截断样式 */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
 .line-clamp-4 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
   overflow: hidden;
+}
+
+/* 确保卡片布局稳定 */
+.project-card-content {
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card-description {
+  flex: 1;
+  min-height: 0; /* 重要：允许flex子项收缩 */
 }
 
 /* 点击外部关闭下拉菜单 */
