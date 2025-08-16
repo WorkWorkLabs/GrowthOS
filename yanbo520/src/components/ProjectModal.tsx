@@ -1,9 +1,10 @@
 'use client'
 
 import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import { Project } from '@/types'
 import { TAG_COLORS, DEFAULT_PROJECT_IMAGE } from '@/lib/constants'
-import { ShoppingCart, MessageCircle, DollarSign, Eye, Heart, Star } from 'lucide-react'
+import { ShoppingCart, MessageCircle, DollarSign, Eye, Heart, Star, CreditCard, Smartphone, Building } from 'lucide-react'
 
 interface ProjectModalProps {
   project: Project
@@ -13,6 +14,8 @@ interface ProjectModalProps {
 }
 
 export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModalProps) {
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
+  
   if (!isOpen || !mounted) return null
 
   const modalContent = (
@@ -92,36 +95,106 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
 
           {/* Action Buttons */}
           <div className="border-t pt-4">
-            <div className="flex gap-3">
-              <button 
-                className="flex-1 bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 font-medium"
-                onClick={() => handlePurchase(project)}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                Buy Now - {project.currency} {project.price}
-              </button>
-              <button 
-                className="px-6 py-3 border border-primary text-primary rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2 font-medium"
-                onClick={() => handleContact(project)}
-              >
-                <MessageCircle className="w-5 h-5" />
-                Contact Seller
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              Secure payment through Solana blockchain
-            </p>
+            {!showPaymentOptions ? (
+              <div className="flex gap-3">
+                <button 
+                  className="flex-1 bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 font-medium"
+                  onClick={() => setShowPaymentOptions(true)}
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  Buy Now - ${project.price}
+                </button>
+                <button 
+                  className="px-6 py-3 border border-primary text-primary rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2 font-medium"
+                  onClick={() => handleContact(project)}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Contact Seller
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-4">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-3">Choose Payment Method</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      className="p-4 border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 transition-colors flex items-center gap-3 text-left"
+                      onClick={() => handlePayment('wechat')}
+                    >
+                      <MessageCircle className="w-6 h-6 text-green-600" />
+                      <div>
+                        <div className="font-medium text-gray-800">WeChat Pay</div>
+                        <div className="text-sm text-gray-500">Scan QR code</div>
+                      </div>
+                    </button>
+                    
+                    <button 
+                      className="p-4 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors flex items-center gap-3 text-left"
+                      onClick={() => handlePayment('alipay')}
+                    >
+                      <CreditCard className="w-6 h-6 text-blue-600" />
+                      <div>
+                        <div className="font-medium text-gray-800">Alipay</div>
+                        <div className="text-sm text-gray-500">Mobile payment</div>
+                      </div>
+                    </button>
+                    
+                    <button 
+                      className="p-4 border border-gray-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-colors flex items-center gap-3 text-left"
+                      onClick={() => handlePayment('card')}
+                    >
+                      <Building className="w-6 h-6 text-purple-600" />
+                      <div>
+                        <div className="font-medium text-gray-800">Bank Card</div>
+                        <div className="text-sm text-gray-500">Credit/Debit</div>
+                      </div>
+                    </button>
+                    
+                    <button 
+                      className="p-4 border border-gray-200 rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-colors flex items-center gap-3 text-left"
+                      onClick={() => handlePayment('solana')}
+                    >
+                      <DollarSign className="w-6 h-6 text-orange-600" />
+                      <div>
+                        <div className="font-medium text-gray-800">Solana</div>
+                        <div className="text-sm text-gray-500">Crypto payment</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                
+                <button 
+                  className="w-full py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  onClick={() => setShowPaymentOptions(false)}
+                >
+                  ← Back
+                </button>
+              </div>
+            )}
+            
+            {!showPaymentOptions && (
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Multiple payment methods available
+              </p>
+            )}
           </div>
         </div>
       </div>
     </div>
   )
 
-  // Handle purchase action
-  function handlePurchase(project: Project) {
-    // TODO: Implement Solana payment flow
-    alert(`Initiating purchase for "${project.name}" - ${project.currency} ${project.price}\n\nThis will redirect to Solana payment gateway.`)
-    console.log('Purchase:', project)
+  // Handle specific payment method
+  function handlePayment(method: string) {
+    const paymentMethods = {
+      wechat: 'WeChat Pay',
+      alipay: 'Alipay',
+      card: 'Bank Card',
+      solana: 'Solana Crypto'
+    }
+    
+    alert(`Processing payment via ${paymentMethods[method as keyof typeof paymentMethods]}\n\nProduct: "${project.name}"\nPrice: $${project.price}\n\nPayment integration coming soon!`)
+    console.log('Payment method selected:', method, 'for project:', project)
+    setShowPaymentOptions(false)
   }
 
   // Handle contact seller
