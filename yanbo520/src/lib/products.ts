@@ -185,32 +185,32 @@ export class ProductsService {
   }
 
   // 转换数据库数据为前端使用的格式
-  static transformProduct(dbProduct: any): Project {
+  static transformProduct(dbProduct: Record<string, unknown>): Project {
     return {
-      id: dbProduct.id,
-      name: dbProduct.name,
-      author: dbProduct.author_name,
-      author_id: dbProduct.author_id,
-      author_name: dbProduct.author_name,
-      description: dbProduct.description,
-      price: parseFloat(dbProduct.price),
-      currency: dbProduct.currency,
-      category: dbProduct.category,
-      image: dbProduct.image_url,
-      image_url: dbProduct.image_url,
+      id: dbProduct.id as string,
+      name: dbProduct.name as string,
+      author: dbProduct.author_name as string,
+      author_id: dbProduct.author_id as string,
+      author_name: dbProduct.author_name as string,
+      description: dbProduct.description as string,
+      price: parseFloat(dbProduct.price as string),
+      currency: dbProduct.currency as string,
+      category: dbProduct.category as string,
+      image: dbProduct.image_url as string,
+      image_url: dbProduct.image_url as string,
       tags: ProductsService.parseTags(dbProduct.tags),
-      views: dbProduct.views || 0,
-      likes: dbProduct.likes || 0,
-      rating: parseFloat(dbProduct.rating) || 0,
+      views: (dbProduct.views as number) || 0,
+      likes: (dbProduct.likes as number) || 0,
+      rating: parseFloat((dbProduct.rating as string) || '0') || 0,
       verified: true, // 可以基于作者验证状态设置
-      status: dbProduct.status,
-      created_at: dbProduct.created_at,
-      updated_at: dbProduct.updated_at
+      status: dbProduct.status as 'active' | 'inactive' | 'deleted',
+      created_at: dbProduct.created_at as string,
+      updated_at: dbProduct.updated_at as string
     }
   }
 
   // 解析标签JSON数据
-  static parseTags(tagsJson: any): Tag[] {
+  static parseTags(tagsJson: unknown): Tag[] {
     if (!tagsJson) return []
     
     try {
