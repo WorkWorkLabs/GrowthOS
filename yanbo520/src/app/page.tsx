@@ -7,6 +7,9 @@ import { ProjectGrid } from '@/components/ProjectGrid'
 import { apiService } from '@/services/api'
 import { Web3Product } from '@/types/web3'
 
+// Force dynamic rendering due to auth usage in Header
+export const dynamic = 'force-dynamic'
+
 // Convert Web3Product to Project format helper function
 const convertWeb3ProductToProject = (product: Web3Product) => {
   const converted = {

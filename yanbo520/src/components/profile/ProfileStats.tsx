@@ -1,7 +1,7 @@
 'use client'
 
 import { UserProfile } from '@/types/web3'
-import { Package, Star, PartyPopper, CheckCircle, Circle } from 'lucide-react'
+import { Package, Star, PartyPopper, CheckCircle, Circle, DollarSign } from 'lucide-react'
 
 interface ProfileStatsProps {
   profile: UserProfile
@@ -35,7 +35,7 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
             </p>
           </div>
           <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <span className="text-green-600 text-xl">💰</span>
+            <DollarSign className="w-6 h-6 text-green-600" />
           </div>
         </div>
         <div className="mt-4">

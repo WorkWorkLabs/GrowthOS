@@ -4,6 +4,9 @@ import React from 'react'
 import { Header } from '@/components/Header'
 import { ProductUploadFlow } from '@/components/create/ProductUploadFlow'
 
+// Force dynamic rendering due to auth usage in Header
+export const dynamic = 'force-dynamic'
+
 export default function CreateProductPage() {
   return (
     <div className="min-h-screen bg-bg-blue">

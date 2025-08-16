@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { UserProfile } from '@/types/web3'
 import { useWallet } from '@/hooks/useWallet'
-import { CheckCircle, Star, X, Edit } from 'lucide-react'
+import { CheckCircle, Star, X, Edit, Twitter, Briefcase, Globe } from 'lucide-react'
 
 interface ProfileHeaderProps {
   profile: UserProfile
@@ -53,9 +53,15 @@ export function ProfileHeader({ profile, isEditing, onToggleEdit }: ProfileHeade
               </span>
             </div>
             
-            <p className="text-text-secondary font-mono text-sm break-all">
-              {profile.walletAddress.slice(0, 8)}...{profile.walletAddress.slice(-8)}
-            </p>
+            {profile.walletAddress ? (
+              <p className="text-text-secondary font-mono text-sm break-all">
+                {profile.walletAddress.slice(0, 8)}...{profile.walletAddress.slice(-8)}
+              </p>
+            ) : (
+              <p className="text-text-secondary text-sm">
+                No wallet connected
+              </p>
+            )}
             
             {profile.bio && (
               <p className="text-text-primary text-base leading-relaxed max-w-2xl">
@@ -91,7 +97,7 @@ export function ProfileHeader({ profile, isEditing, onToggleEdit }: ProfileHeade
                     rel="noopener noreferrer"
                     className="flex items-center space-x-1 text-blue-500 hover:text-blue-600 text-sm font-medium"
                   >
-                    <span>🐦</span>
+                    <Twitter className="w-4 h-4" />
                     <span>{profile.social.twitter}</span>
                   </a>
                 )}
@@ -102,7 +108,7 @@ export function ProfileHeader({ profile, isEditing, onToggleEdit }: ProfileHeade
                     rel="noopener noreferrer"
                     className="flex items-center space-x-1 text-blue-700 hover:text-blue-800 text-sm font-medium"
                   >
-                    <span>💼</span>
+                    <Briefcase className="w-4 h-4" />
                     <span>LinkedIn</span>
                   </a>
                 )}
@@ -113,7 +119,7 @@ export function ProfileHeader({ profile, isEditing, onToggleEdit }: ProfileHeade
                     rel="noopener noreferrer"
                     className="flex items-center space-x-1 text-green-600 hover:text-green-700 text-sm font-medium"
                   >
-                    <span>🌐</span>
+                    <Globe className="w-4 h-4" />
                     <span>Website</span>
                   </a>
                 )}

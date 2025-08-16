@@ -10,10 +10,18 @@ export const supabase = (supabaseUrl !== 'https://placeholder.supabase.co' && su
 
 // Database types
 export interface UserProfile {
-  wallet_address: string
+  id: string
+  email: string
   username: string
   bio?: string
   avatar?: string
+  wallet_address?: string
+  social_wechat?: string
+  social_alipay?: string
+  social_linkedin?: string
+  social_website?: string
+  email_verified?: boolean
+  is_active?: boolean
   created_at?: string
   updated_at?: string
 }

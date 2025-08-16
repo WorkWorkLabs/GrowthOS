@@ -2,58 +2,75 @@
 
 import { useState } from 'react'
 import { UserProfile } from '@/types/web3'
+import { useAuth } from '@/providers/AuthProvider'
 
 interface ProfileFormProps {
   profile: UserProfile
-  onSave: (profile: UserProfile) => void
+  onSave: () => void
   onCancel: () => void
 }
 
 export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
+  const { updateProfile, connectWallet } = useAuth()
+  
   const [formData, setFormData] = useState({
     username: profile.username,
     bio: profile.bio || '',
-    email: profile.email || '',
-    twitter: profile.social.twitter || '',
-    linkedin: profile.social.linkedin || '',
-    github: profile.social.github || '',
-    website: profile.social.website || '',
-    avatar: profile.avatar
+    avatar: profile.avatar,
+    wechat: profile.social?.wechat || '',
+    alipay: profile.social?.alipay || '',
+    linkedin: profile.social?.linkedin || '',
+    website: profile.social?.website || '',
   })
   
   const [loading, setLoading] = useState(false)
+  const [walletAddress, setWalletAddress] = useState('')
+  const [connectingWallet, setConnectingWallet] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const updatedProfile: UserProfile = {
-        ...profile,
+      await updateProfile({
         username: formData.username,
         bio: formData.bio,
-        email: formData.email,
         avatar: formData.avatar,
         social: {
-          twitter: formData.twitter,
+          wechat: formData.wechat,
+          alipay: formData.alipay,
           linkedin: formData.linkedin,
-          github: formData.github,
-          website: formData.website
+          website: formData.website,
+          twitter: '',
+          github: '',
         }
-      }
-
-      // TODO: Call real API to update user profile
-      // const result = await apiService.updateUserProfile(profile.walletAddress, updatedProfile)
+      })
       
-      // Currently simulating save
-      localStorage.setItem(`profile_${profile.walletAddress}`, JSON.stringify(updatedProfile))
-      
-      onSave(updatedProfile)
+      onSave()
     } catch (error) {
       console.error('Failed to save profile:', error)
       alert('Failed to save profile. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleConnectWallet = async () => {
+    if (!walletAddress.trim()) {
+      alert('Please enter a wallet address')
+      return
+    }
+
+    setConnectingWallet(true)
+    try {
+      await connectWallet(walletAddress.trim())
+      setWalletAddress('')
+      alert('Wallet connected successfully!')
+    } catch (error) {
+      console.error('Failed to connect wallet:', error)
+      alert('Failed to connect wallet. Please try again.')
+    } finally {
+      setConnectingWallet(false)
     }
   }
 
@@ -88,11 +105,12 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
             </label>
             <input
               type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="your@email.com"
+              value={profile.email}
+              disabled
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+              placeholder="Email cannot be changed"
             />
+            <p className="text-xs text-gray-500 mt-1">Email is linked to your account and cannot be changed</p>
           </div>
         </div>
 
@@ -124,33 +142,74 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
           />
         </div>
 
+        {/* Wallet Connection */}
+        <div>
+          <h3 className="text-lg font-medium text-text-primary mb-4">Crypto Wallet</h3>
+          <div className="bg-gray-50 rounded-lg p-4">
+            {profile.walletAddress ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Connected Wallet</p>
+                  <p className="text-xs text-gray-500 font-mono">
+                    {profile.walletAddress.slice(0, 6)}...{profile.walletAddress.slice(-4)}
+                  </p>
+                </div>
+                <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                  Connected
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">Connect your crypto wallet (optional)</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="0x... wallet address"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleConnectWallet}
+                    disabled={connectingWallet}
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {connectingWallet ? 'Connecting...' : 'Connect'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Social Media */}
         <div>
           <h3 className="text-lg font-medium text-text-primary mb-4">Social Links</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">
-                Twitter
+                WeChat ID
               </label>
               <input
                 type="text"
-                value={formData.twitter}
-                onChange={(e) => handleInputChange('twitter', e.target.value)}
+                value={formData.wechat}
+                onChange={(e) => handleInputChange('wechat', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="@username"
+                placeholder="Your WeChat ID"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">
-                GitHub
+                Alipay Account
               </label>
               <input
                 type="text"
-                value={formData.github}
-                onChange={(e) => handleInputChange('github', e.target.value)}
+                value={formData.alipay}
+                onChange={(e) => handleInputChange('alipay', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="username"
+                placeholder="Your Alipay account"
               />
             </div>
 
@@ -169,7 +228,7 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">
-                Website
+                Personal Website
               </label>
               <input
                 type="url"

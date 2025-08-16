@@ -66,16 +66,19 @@ export interface PaymentTransaction {
 }
 
 export interface UserProfile {
-  walletAddress: string
+  id?: string
+  email: string
+  walletAddress?: string  // Made optional - not required for Web2 users
   username: string
   bio?: string
   avatar: string
-  email?: string
   social: {
     twitter?: string
     linkedin?: string
     github?: string
     website?: string
+    wechat?: string      // Added WeChat
+    alipay?: string      // Added Alipay
   }
   stats: {
     totalSales: number
@@ -87,5 +90,6 @@ export interface UserProfile {
     isVerified: boolean
     kycCompleted: boolean
     badgeLevel: 'bronze' | 'silver' | 'gold' | 'platinum'
+    emailVerified?: boolean  // Added email verification
   }
 }
