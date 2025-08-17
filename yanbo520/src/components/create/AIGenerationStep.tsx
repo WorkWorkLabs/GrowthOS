@@ -42,7 +42,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
       if (data.uploadType === 'readme' && data.files.length > 0) {
         baseContent = 'README-based project'
       } else if (data.uploadType === 'zip' && data.files.length > 0) {
-        baseContent = 'Full project archive'
+        baseContent = 'Project landing page'
       } else if (data.uploadType === 'github') {
         baseContent = 'GitHub repository'
       } else if (data.uploadType === 'video') {

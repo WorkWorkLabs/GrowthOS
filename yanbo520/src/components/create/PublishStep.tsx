@@ -1,43 +1,115 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ProductData } from './ProductUploadFlow'
 import { useRouter } from 'next/navigation'
 import { PartyPopper, AlertTriangle, Rocket, Loader2 } from 'lucide-react'
+import { runDifyWorkflow } from '@/lib/dify'
 
 interface PublishStepProps {
   data: ProductData
   onPrev: () => void
+  onNext: () => void
+  onWorkflowComplete: (result: Record<string, unknown>) => void
 }
 
-export function PublishStep({ data, onPrev }: PublishStepProps) {
+
+export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: PublishStepProps) {
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [workflowResult, setWorkflowResult] = useState<Record<string, unknown> | null>(null)
   const router = useRouter()
 
-  if (!data.aiContent) {
-    return <div>No content to publish</div>
-  }
+  // Reset state when data changes
+  useEffect(() => {
+    setIsPublishing(false)
+    setPublishSuccess(false)
+    setProgress(0)
+    setElapsedTime(0)
+    setWorkflowResult(null)
+  }, [data])
 
   const handlePublish = async () => {
     setIsPublishing(true)
+    setProgress(0)
+    setElapsedTime(0)
 
     try {
-      // Simulate publishing process
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Prepare inputs for the workflow
+      const inputs: Record<string, unknown> = {}
       
-      // TODO: Actually save to API/blockchain
-      // const result = await apiService.createProduct(productData)
+      // Add GitHub URL if provided
+      if (data.githubUrl) {
+        inputs.github = data.githubUrl
+      }
       
+      // Add landing page URL if provided
+      if (data.zipUrl) {
+        inputs.landingpage = data.zipUrl
+      }
+      
+      // Add README file if uploaded
+      if (data.difyFileId) {
+        inputs.readme = {
+          transfer_method: "local_file",
+          upload_file_id: data.difyFileId,
+          type: "document"
+        }
+      }
+
+      // For demo purposes, we'll use a fixed user ID
+      // In a real application, this should be the actual user ID
+      const userId = 'abc-123'
+
+      // Start the workflow
+      const workflowResponse = await runDifyWorkflow(inputs, userId)
+      console.log('Workflow response:', workflowResponse)
+      
+      // Store the workflow result
+      setWorkflowResult(workflowResponse)
+      onWorkflowComplete(workflowResponse)
+
+      // Simulate progress until we get a response
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev + 1
+          setElapsedTime(Math.floor(newProgress * 0.6)) // Estimate elapsed time
+          // If we've reached 100% or have a response, stop the interval
+          if (newProgress >= 100 || workflowResponse) {
+            clearInterval(progressInterval)
+            return 100
+          }
+          return newProgress
+        })
+      }, 600) // Update every 600ms
+
+      // Wait for the workflow to complete (with a timeout)
+      // In a real implementation, you would use the actual workflow response
+      await new Promise(resolve => setTimeout(resolve, 60000)) // 60s timeout
+      
+      // After 60s, set to 99% if not already finished
+      if (progress < 100) {
+        clearInterval(progressInterval)
+        setProgress(99)
+      }
+
       setPublishSuccess(true)
       setIsPublishing(false)
+      clearInterval(progressInterval)
+      
+      // Move to results page after a short delay
+      setTimeout(() => {
+        onNext() // Call onNext to move to the next step
+      }, 2000)
     } catch (error) {
       console.error('Publishing failed:', error)
       setIsPublishing(false)
     }
   }
 
-  if (publishSuccess) {
+  if (publishSuccess && workflowResult) {
     return (
       <div className="text-center py-12">
         <div className="mb-6">
@@ -92,27 +164,6 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-gray-700 mb-1">Title</h4>
-              <p className="text-gray-900">{data.aiContent.title}</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-1">Category</h4>
-              <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm capitalize">
-                {data.aiContent.category}
-              </span>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-1">Price</h4>
-              <p className="text-2xl font-bold text-primary">
-                {data.aiContent.currency} {data.aiContent.price}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
               <h4 className="font-semibold text-gray-700 mb-1">Source</h4>
               <p className="text-gray-900 capitalize">
                 {data.uploadType} 
@@ -123,74 +174,40 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
               </p>
             </div>
             
+            {data.difyFileId && (
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-1">Dify File ID</h4>
+                <p className="text-gray-900 font-mono text-sm">{data.difyFileId}</p>
+              </div>
+            )}
+            
+            {data.githubUrl && (
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-1">GitHub URL</h4>
+                <p className="text-gray-900 text-sm break-all">{data.githubUrl}</p>
+              </div>
+            )}
+
+            {data.zipUrl && (
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-1">Landing Page URL</h4>
+                <p className="text-gray-900 text-sm break-all">{data.zipUrl}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-gray-700 mb-1">Keywords</h4>
-              <div className="flex flex-wrap gap-1">
-                {data.aiContent.keywords.slice(0, 3).map((keyword, index) => (
-                  <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                    {keyword}
-                  </span>
+              <h4 className="font-semibold text-gray-700 mb-1">Files</h4>
+              <div className="space-y-2">
+                {data.files.map((file, index) => (
+                  <div key={index} className="text-sm text-gray-700">
+                    <span className="font-medium">{file.name}</span> 
+                    <span className="text-gray-500"> ({(file.size / 1024).toFixed(1)} KB)</span>
+                  </div>
                 ))}
-                {data.aiContent.keywords.length > 3 && (
-                  <span className="text-gray-500 text-xs">
-                    +{data.aiContent.keywords.length - 3} more
-                  </span>
-                )}
               </div>
             </div>
-
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-1">Description Preview</h4>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {data.aiContent.description.length > 100 
-                  ? data.aiContent.description.substring(0, 100) + '...'
-                  : data.aiContent.description
-                }
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Publishing Options */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="font-semibold mb-4">Publishing Options</h3>
-        
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="terms"
-              className="rounded border-gray-300 text-primary focus:ring-primary"
-              defaultChecked
-            />
-            <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
-              I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Content Policy</a>
-            </label>
-          </div>
-          
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="marketing"
-              className="rounded border-gray-300 text-primary focus:ring-primary"
-              defaultChecked
-            />
-            <label htmlFor="marketing" className="ml-2 text-sm text-gray-700">
-              Allow WorkWork to promote my product in marketing materials
-            </label>
-          </div>
-          
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="analytics"
-              className="rounded border-gray-300 text-primary focus:ring-primary"
-              defaultChecked
-            />
-            <label htmlFor="analytics" className="ml-2 text-sm text-gray-700">
-              Enable analytics and performance tracking
-            </label>
           </div>
         </div>
       </div>
@@ -203,13 +220,32 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
             <h4 className="font-semibold text-yellow-800 mb-1">Important Notes</h4>
             <ul className="text-sm text-yellow-700 space-y-1">
               <li>• Once published, your product will be visible to all users</li>
+              <li>• The AI generation process may take up to 60 seconds</li>
               <li>• You can edit product details anytime from your dashboard</li>
               <li>• Payments will be processed through smart contracts</li>
-              <li>• Platform fees apply to all sales (currently 5%)</li>
             </ul>
           </div>
         </div>
       </div>
+
+      {/* Progress Bar */}
+      {isPublishing && (
+        <div className="space-y-4">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Processing...</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-primary h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <p className="text-center text-sm text-gray-500">
+            Elapsed time: {elapsedTime} seconds
+          </p>
+        </div>
+      )}
 
       {/* Publish Button */}
       {!isPublishing ? (
@@ -229,7 +265,7 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
         <div className="text-center py-8">
           <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary mb-4" />
           <h3 className="text-xl font-semibold mb-2">Publishing Your Product...</h3>
-          <p className="text-gray-600">Please wait while we prepare your product for the platform</p>
+          <p className="text-gray-600">Please wait while we process your request</p>
         </div>
       )}
 
@@ -240,7 +276,7 @@ export function PublishStep({ data, onPrev }: PublishStepProps) {
             onClick={onPrev}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            ← Back to Preview
+            ← Back to Upload
           </button>
         </div>
       )}

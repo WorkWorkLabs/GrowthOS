@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react'
 import { ProductData } from './ProductUploadFlow'
-import { FileText, Package, Github, Video, CheckCircle } from 'lucide-react'
+import { FileText, Globe, Github, Video, CheckCircle } from 'lucide-react'
+import { uploadFileToDify } from '@/lib/dify'
 
 interface FileUploadStepProps {
   data: ProductData
@@ -13,6 +14,7 @@ interface FileUploadStepProps {
 export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [readmeUploaded, setReadmeUploaded] = useState(false)
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -34,11 +36,48 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
     }
   }
 
-  const handleFiles = (fileList: File[]) => {
-    onUpdate({
-      files: fileList,
-      uploadType: fileList[0]?.name.endsWith('.zip') ? 'zip' : 'readme'
-    })
+  const handleFiles = async (fileList: File[]) => {
+    const file = fileList[0]
+    if (!file) return
+
+    // Determine upload type based on file extension
+    const uploadType = file.name.endsWith('.zip') ? 'zip' : 'readme'
+    onUpdate({ files: fileList, uploadType })
+
+    // If it's a README file, upload it to Dify
+    if (uploadType === 'readme') {
+      // Start upload with progress
+      onUpdate({ isUploading: true, uploadProgress: 0 })
+      
+      // Simulate progress
+      let currentProgress = 0
+      const progressInterval = setInterval(() => {
+        currentProgress = Math.min(currentProgress + 20, 90)
+        onUpdate({ uploadProgress: currentProgress })
+      }, 200)
+      
+      try {
+        // For demo purposes, we'll use a fixed user ID
+        // In a real application, this should be the actual user ID
+        const userId = 'abc-123'
+        const uploadedFile = await uploadFileToDify(file, userId)
+        console.log('File uploaded to Dify:', uploadedFile)
+        
+        // Complete progress
+        clearInterval(progressInterval)
+        onUpdate({ 
+          difyFileId: uploadedFile.id, 
+          isUploading: false, 
+          uploadProgress: 100 
+        })
+        setReadmeUploaded(true)
+      } catch (error) {
+        console.error('Failed to upload file to Dify:', error)
+        clearInterval(progressInterval)
+        onUpdate({ isUploading: false, uploadProgress: 0 })
+        // TODO: Handle error (show message to user)
+      }
+    }
   }
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +87,8 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
   }
 
   const canProceed = data.uploadType && (
-    (data.uploadType === 'readme' || data.uploadType === 'zip') && data.files.length > 0 ||
+    (data.uploadType === 'readme') && data.files.length > 0 ||
+    (data.uploadType === 'zip') && data.zipUrl ||
     data.uploadType === 'github' && data.githubUrl ||
     data.uploadType === 'video' && data.videoUrl
   )
@@ -74,7 +114,9 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
           `}
           onClick={() => {
             onUpdate({ uploadType: 'readme' })
-            fileInputRef.current?.click()
+            if (!readmeUploaded) {
+              fileInputRef.current?.click()
+            }
           }}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -89,8 +131,23 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
             <p className="text-sm text-gray-600 mb-4">
               Upload your project&apos;s README.md file
             </p>
-            {data.uploadType === 'readme' && data.files.length > 0 && (
-              <div className="text-sm text-primary font-medium flex items-center space-x-1">
+            
+            {/* Upload Progress */}
+            {data.isUploading && data.uploadType === 'readme' && (
+              <div className="mb-4">
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div 
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${data.uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500">Uploading... {data.uploadProgress}%</p>
+              </div>
+            )}
+            
+            {/* Upload Complete */}
+            {readmeUploaded && data.files.length > 0 && (
+              <div className="text-sm text-primary font-medium flex items-center justify-center space-x-1">
                 <CheckCircle className="w-4 h-4" />
                 <span>{data.files[0].name}</span>
               </div>
@@ -98,7 +155,7 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
           </div>
         </div>
 
-        {/* ZIP Upload */}
+        {/* Landing Page URL */}
         <div 
           className={`
             border-2 border-dashed rounded-lg p-6 cursor-pointer transition-all
@@ -107,25 +164,16 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
               : 'border-gray-300 hover:border-gray-400'
             }
           `}
-          onClick={() => {
-            onUpdate({ uploadType: 'zip' })
-            fileInputRef.current?.click()
-          }}
+          onClick={() => onUpdate({ uploadType: 'zip' })}
         >
           <div className="text-center">
             <div className="mb-4">
-              <Package className="w-12 h-12 mx-auto text-gray-400" />
+              <Globe className="w-12 h-12 mx-auto text-gray-400" />
             </div>
-            <h3 className="font-semibold mb-2">Project Archive</h3>
+            <h3 className="font-semibold mb-2">Project Landing Page</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Upload a ZIP file of your entire project
+              Link to your project landing page
             </p>
-            {data.uploadType === 'zip' && data.files.length > 0 && (
-              <div className="text-sm text-primary font-medium flex items-center space-x-1">
-                <CheckCircle className="w-4 h-4" />
-                <span>{data.files[0].name}</span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -148,7 +196,6 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
             <p className="text-sm text-gray-600 mb-4">
               Link to your GitHub repository
             </p>
-            <span className="text-xs text-gray-500">(Coming Soon)</span>
           </div>
         </div>
 
@@ -176,7 +223,22 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
         </div>
       </div>
 
-      {/* URL Inputs for GitHub/Video */}
+      {/* URL Inputs for ZIP/GitHub/Video */}
+      {data.uploadType === 'zip' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Project Landing Page URL
+          </label>
+          <input
+            type="url"
+            value={data.zipUrl}
+            onChange={(e) => onUpdate({ zipUrl: e.target.value })}
+            placeholder="https://your-project-landing-page.com"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+        </div>
+      )}
+      
       {data.uploadType === 'github' && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
