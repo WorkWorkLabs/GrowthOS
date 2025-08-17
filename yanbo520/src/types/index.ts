@@ -25,6 +25,10 @@ export interface Project {
   status?: 'active' | 'inactive' | 'deleted'
   created_at?: string
   updated_at?: string
+  product_type?: 'product' | 'subscription'
+  subscription_period?: 'monthly' | 'quarterly' | 'yearly'
+  subscription_duration?: number
+  subscription_price_per_period?: number
 }
 
 export type FilterType = 'time' | 'price' | 'likes' | 'views'

@@ -1,0 +1,207 @@
+-- 为产品表添加产品类型字段
+ALTER TABLE products 
+ADD COLUMN product_type TEXT DEFAULT 'product' CHECK (product_type IN ('product', 'subscription'));
+
+-- 为订阅服务添加周期相关字段
+ALTER TABLE products 
+ADD COLUMN subscription_period TEXT CHECK (subscription_period IN ('monthly', 'quarterly', 'yearly')),
+ADD COLUMN subscription_duration INTEGER, -- 订阅总时长（月数）
+ADD COLUMN subscription_price_per_period DECIMAL(10,2); -- 每期价格
+
+-- 创建订单表，用于对接StreamFlow
+CREATE TABLE orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  
+  -- 基础订单信息
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  buyer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  seller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  
+  -- 价格信息
+  total_amount DECIMAL(10,2) NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'SOL',
+  
+  -- StreamFlow集成
+  streamflow_stream_id TEXT, -- StreamFlow返回的streamId
+  streamflow_seller_id TEXT, -- StreamFlow的sellerId
+  buyer_wallet_address TEXT, -- 买家的Solana钱包地址
+  seller_wallet_address TEXT, -- 卖家的Solana钱包地址
+  
+  -- 订单状态
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'active', 'completed', 'cancelled', 'failed')),
+  
+  -- 支付类型特定字段
+  product_type TEXT NOT NULL CHECK (product_type IN ('product', 'subscription')),
+  
+  -- 订阅相关字段（仅订阅类型使用）
+  subscription_period TEXT CHECK (subscription_period IN ('monthly', 'quarterly', 'yearly')),
+  subscription_duration INTEGER, -- 订阅总时长（月数）
+  subscription_start_date TIMESTAMP WITH TIME ZONE,
+  subscription_end_date TIMESTAMP WITH TIME ZONE,
+  
+  -- StreamFlow配置
+  stream_amount TEXT, -- 以lamports为单位的总金额
+  stream_amount_per_period TEXT, -- 每期释放金额
+  stream_period_seconds INTEGER, -- 释放周期（秒）
+  stream_start_time TIMESTAMP WITH TIME ZONE,
+  stream_end_time TIMESTAMP WITH TIME ZONE,
+  
+  -- 错误处理
+  error_message TEXT,
+  retry_count INTEGER DEFAULT 0,
+  last_retry_at TIMESTAMP WITH TIME ZONE,
+  
+  -- 时间戳
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX idx_orders_product_id ON orders(product_id);
+CREATE INDEX idx_orders_buyer_id ON orders(buyer_id);
+CREATE INDEX idx_orders_seller_id ON orders(seller_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_streamflow_stream_id ON orders(streamflow_stream_id);
+CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
+CREATE INDEX idx_orders_product_type ON orders(product_type);
+
+-- 创建更新时间触发器
+CREATE OR REPLACE FUNCTION update_orders_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_orders_updated_at
+    BEFORE UPDATE ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION update_orders_updated_at();
+
+-- 设置RLS策略
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+-- 允许买家查看自己的订单
+CREATE POLICY "Allow buyers to view their own orders" ON orders
+    FOR SELECT USING (auth.uid() = buyer_id);
+
+-- 允许卖家查看自己的订单
+CREATE POLICY "Allow sellers to view their own orders" ON orders
+    FOR SELECT USING (auth.uid() = seller_id);
+
+-- 允许认证用户创建订单（作为买家）
+CREATE POLICY "Allow authenticated users to create orders as buyers" ON orders
+    FOR INSERT WITH CHECK (auth.uid() = buyer_id);
+
+-- 允许卖家更新自己相关的订单状态
+CREATE POLICY "Allow sellers to update their order status" ON orders
+    FOR UPDATE USING (auth.uid() = seller_id);
+
+-- 创建StreamFlow卖家映射表
+CREATE TABLE streamflow_sellers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+  streamflow_seller_id TEXT NOT NULL UNIQUE, -- StreamFlow返回的sellerId
+  wallet_address TEXT NOT NULL,
+  name TEXT,
+  email TEXT,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX idx_streamflow_sellers_user_id ON streamflow_sellers(user_id);
+CREATE INDEX idx_streamflow_sellers_streamflow_id ON streamflow_sellers(streamflow_seller_id);
+CREATE INDEX idx_streamflow_sellers_wallet ON streamflow_sellers(wallet_address);
+
+-- 设置RLS策略
+ALTER TABLE streamflow_sellers ENABLE ROW LEVEL SECURITY;
+
+-- 允许用户查看和管理自己的StreamFlow卖家信息
+CREATE POLICY "Allow users to manage their own streamflow seller info" ON streamflow_sellers
+    FOR ALL USING (auth.uid() = user_id);
+
+-- 创建更新时间触发器
+CREATE TRIGGER trigger_update_streamflow_sellers_updated_at
+    BEFORE UPDATE ON streamflow_sellers
+    FOR EACH ROW
+    EXECUTE FUNCTION update_orders_updated_at();
+
+-- 为现有产品设置默认类型
+UPDATE products SET product_type = 'product' WHERE product_type IS NULL;
+
+-- 添加一些订阅服务的样例数据
+INSERT INTO products (
+  name, 
+  description, 
+  author_id, 
+  author_name, 
+  price, 
+  currency, 
+  category, 
+  image_url, 
+  views, 
+  likes, 
+  rating, 
+  tags,
+  product_type,
+  subscription_period,
+  subscription_duration,
+  subscription_price_per_period
+) VALUES 
+(
+  'AI Content Writing Service',
+  'Monthly AI-powered content creation service. Get high-quality blog posts, social media content, and marketing copy generated by advanced AI. Includes SEO optimization and unlimited revisions.',
+  (SELECT id FROM users LIMIT 1),
+  'ContentAI Pro',
+  29.99,
+  'SOL',
+  'AI Tools',
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+  456,
+  67,
+  4.8,
+  '[{"type": "ai", "label": "Content"}, {"type": "education", "label": "Writing"}, {"type": "ai", "label": "Subscription"}]'::jsonb,
+  'subscription',
+  'monthly',
+  12,
+  29.99
+),
+(
+  'DeFi Yield Monitoring Service',
+  'Professional DeFi yield farming monitoring and alerting service. 24/7 monitoring of your positions, real-time alerts for opportunities, and monthly strategy reports.',
+  (SELECT id FROM users LIMIT 1),
+  'YieldMonitor',
+  49.99,
+  'SOL',
+  'DeFi',
+  'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop',
+  234,
+  45,
+  4.7,
+  '[{"type": "crypto", "label": "DeFi"}, {"type": "education", "label": "Monitoring"}, {"type": "crypto", "label": "Yield"}]'::jsonb,
+  'subscription',
+  'monthly',
+  6,
+  49.99
+),
+(
+  'Premium Web3 Development Course',
+  'Comprehensive quarterly Web3 development program with live mentoring, project reviews, and exclusive community access. Updated curriculum every quarter.',
+  (SELECT id FROM users LIMIT 1),
+  'Web3Academy',
+  199.99,
+  'SOL',
+  'Education',
+  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+  1123,
+  189,
+  4.9,
+  '[{"type": "education", "label": "Web3"}, {"type": "education", "label": "Development"}, {"type": "education", "label": "Mentoring"}]'::jsonb,
+  'subscription',
+  'quarterly',
+  12,
+  199.99
+);
