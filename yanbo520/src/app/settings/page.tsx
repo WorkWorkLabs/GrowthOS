@@ -39,16 +39,6 @@ export default function SettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (user) {
-      loadSettings()
-    }
-  }, [user, loadSettings])
-
   const loadSettings = useCallback(async () => {
     if (!user) return
 
@@ -70,6 +60,16 @@ export default function SettingsPage() {
       setLoading(false)
     }
   }, [user])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (user) {
+      loadSettings()
+    }
+  }, [user, loadSettings])
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text })

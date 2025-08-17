@@ -41,21 +41,6 @@ export default function OrdersPage() {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (user) {
-      loadOrders()
-    }
-  }, [user, role, statusFilter, loadOrders])
-
-  const handleViewOrder = (order: OrderWithProduct) => {
-    setSelectedOrder(order)
-    setShowDetailModal(true)
-  }
-
   const loadOrders = useCallback(async () => {
     if (!user) return
 
@@ -78,6 +63,21 @@ export default function OrdersPage() {
       setLoading(false)
     }
   }, [user, role, statusFilter])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (user) {
+      loadOrders()
+    }
+  }, [user, role, statusFilter, loadOrders])
+
+  const handleViewOrder = (order: OrderWithProduct) => {
+    setSelectedOrder(order)
+    setShowDetailModal(true)
+  }
 
   const handleRetryOrder = async (orderId: string) => {
     if (!user) return

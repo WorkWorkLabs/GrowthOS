@@ -43,13 +43,6 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
     missingRequirements: string[]
   } | null>(null)
 
-  // 检查支付条件
-  useEffect(() => {
-    if (isOpen && user) {
-      checkPaymentConditions()
-    }
-  }, [isOpen, user, checkPaymentConditions])
-
   const checkPaymentConditions = useCallback(async () => {
     if (!user) return
     
@@ -65,6 +58,13 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
       setError('Failed to check payment conditions')
     }
   }, [user])
+
+  // 检查支付条件
+  useEffect(() => {
+    if (isOpen && user) {
+      checkPaymentConditions()
+    }
+  }, [isOpen, user, checkPaymentConditions])
 
   const handleMethodSelect = (method: PaymentMethod) => {
     setSelectedMethod(method)

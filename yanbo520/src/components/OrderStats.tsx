@@ -30,10 +30,6 @@ export function OrderStats({ userId, role }: OrderStatsProps) {
   const [stats, setStats] = useState<OrderStats | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadStats()
-  }, [userId, role, loadStats])
-
   const loadStats = useCallback(async () => {
     setLoading(true)
     try {
@@ -45,6 +41,10 @@ export function OrderStats({ userId, role }: OrderStatsProps) {
       setLoading(false)
     }
   }, [userId, role])
+
+  useEffect(() => {
+    loadStats()
+  }, [userId, role, loadStats])
 
   if (loading) {
     return (
