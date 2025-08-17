@@ -1,5 +1,5 @@
 // Dify API client
-const DIFY_API_URL = process.env.NEXT_PUBLIC_DIFY_API_URL || 'http://instance.hellodify.com/v1'
+const DIFY_API_URL = process.env.NEXT_PUBLIC_DIFY_API_URL || 'https://instance.hellodify.com/v1'
 const DIFY_API_KEY = process.env.NEXT_PUBLIC_DIFY_API_KEY || ''
 
 if (!DIFY_API_KEY) {
@@ -66,9 +66,12 @@ export async function runDifyWorkflow(inputs: Record<string, unknown>, user: str
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to run workflow in Dify: ${response.statusText}`)
+    const errorText = await response.text()
+    console.error('Dify API error response:', errorText)
+    throw new Error(`Failed to run workflow in Dify: ${response.status} ${response.statusText} - ${errorText}`)
   }
 
   const data = await response.json()
+  console.log('Dify workflow completed successfully:', data)
   return data
 }

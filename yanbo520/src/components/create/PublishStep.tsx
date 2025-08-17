@@ -5,6 +5,9 @@ import { ProductData } from './ProductUploadFlow'
 import { useRouter } from 'next/navigation'
 import { PartyPopper, AlertTriangle, Rocket, Loader2 } from 'lucide-react'
 import { runDifyWorkflow } from '@/lib/dify'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/providers/AuthProvider'
+import { TagType } from '@/types'
 
 interface PublishStepProps {
   data: ProductData
@@ -20,7 +23,9 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
   const [progress, setProgress] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [workflowResult, setWorkflowResult] = useState<Record<string, unknown> | null>(null)
+  const [publishStep, setPublishStep] = useState('')
   const router = useRouter()
+  const { user, profile } = useAuth()
 
   // Reset state when data changes
   useEffect(() => {
@@ -32,25 +37,33 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
   }, [data])
 
   const handlePublish = async () => {
+    if (!user || !profile) {
+      alert('Please log in to publish products')
+      return
+    }
+
+    if (!supabase) {
+      alert('Database connection not available')
+      return
+    }
+
     setIsPublishing(true)
     setProgress(0)
     setElapsedTime(0)
 
     try {
-      // Prepare inputs for the workflow
-      const inputs: Record<string, unknown> = {}
+      // Step 1: Run Dify workflow (if needed)
+      setPublishStep('Running AI workflow...')
+      setProgress(20)
       
-      // Add GitHub URL if provided
-      if (data.githubUrl) {
-        inputs.github = data.githubUrl
+      const inputs: Record<string, unknown> = {
+        github: data.githubUrl || 'https://github.com/example/demo-project'
       }
       
-      // Add landing page URL if provided
       if (data.zipUrl) {
         inputs.landingpage = data.zipUrl
       }
       
-      // Add README file if uploaded
       if (data.difyFileId) {
         inputs.readme = {
           transfer_method: "local_file",
@@ -59,53 +72,126 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
         }
       }
 
-      // For demo purposes, we'll use a fixed user ID
-      // In a real application, this should be the actual user ID
-      const userId = 'abc-123'
-
-      // Start the workflow
-      const workflowResponse = await runDifyWorkflow(inputs, userId)
-      console.log('Workflow response:', workflowResponse)
+      const userId = user.id || 'abc-123'
+      let workflowResponse: Record<string, unknown> = {}
       
-      // Store the workflow result
-      setWorkflowResult(workflowResponse)
-      onWorkflowComplete(workflowResponse)
-
-      // Simulate progress until we get a response
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          const newProgress = prev + 1
-          setElapsedTime(Math.floor(newProgress * 0.6)) // Estimate elapsed time
-          // If we've reached 100% or have a response, stop the interval
-          if (newProgress >= 100 || workflowResponse) {
-            clearInterval(progressInterval)
-            return 100
-          }
-          return newProgress
-        })
-      }, 600) // Update every 600ms
-
-      // Wait for the workflow to complete (with a timeout)
-      // In a real implementation, you would use the actual workflow response
-      await new Promise(resolve => setTimeout(resolve, 60000)) // 60s timeout
-      
-      // After 60s, set to 99% if not already finished
-      if (progress < 100) {
-        clearInterval(progressInterval)
-        setProgress(99)
+      try {
+        workflowResponse = await runDifyWorkflow(inputs, userId)
+        console.log('Workflow response:', workflowResponse)
+      } catch (workflowError) {
+        console.warn('Dify workflow failed, continuing with manual data:', workflowError)
+        // Continue with publishing even if workflow fails
       }
-
+      
+      // Step 2: Prepare product data
+      setPublishStep('Preparing product data...')
+      setProgress(40)
+      
+      // Generate title and description from upload data if AI content not available
+      const generateTitle = () => {
+        if (data.aiContent?.title) return data.aiContent.title
+        if (data.uploadType === 'github') return `GitHub Project: ${data.githubUrl?.split('/').pop() || 'Repository'}`
+        if (data.uploadType === 'readme' && data.files[0]) return `Project: ${data.files[0].name.replace('.md', '').replace('README', 'Documentation')}`
+        if (data.uploadType === 'zip') return 'Project Landing Page'
+        if (data.uploadType === 'video') return 'Video Demonstration Project'
+        return 'Untitled Project'
+      }
+      
+      const generateDescription = () => {
+        if (data.aiContent?.description) return data.aiContent.description
+        if (data.uploadType === 'github') return `A project repository hosted on GitHub: ${data.githubUrl}`
+        if (data.uploadType === 'readme') return `Project documentation and resources. ${data.readmeContent?.substring(0, 200) || ''}`
+        if (data.uploadType === 'zip') return `Complete project package with landing page: ${data.zipUrl}`
+        if (data.uploadType === 'video') return `Video demonstration and tutorial: ${data.videoUrl}`
+        return 'A WorkWork platform project with detailed documentation and resources.'
+      }
+      
+      const generateCategory = () => {
+        if (data.aiContent?.category) return data.aiContent.category
+        if (data.uploadType === 'github') return 'development'
+        if (data.uploadType === 'video') return 'education'
+        return 'other'
+      }
+      
+      const generateTags = () => {
+        if (data.aiContent?.keywords) {
+          return data.aiContent.keywords.map(keyword => ({
+            label: keyword,
+            type: 'education' as TagType
+          }))
+        }
+        
+        const defaultTags = []
+        if (data.uploadType === 'github') defaultTags.push({ label: 'GitHub', type: 'education' as TagType })
+        if (data.uploadType === 'readme') defaultTags.push({ label: 'Documentation', type: 'education' as TagType })
+        if (data.uploadType === 'video') defaultTags.push({ label: 'Video', type: 'education' as TagType })
+        defaultTags.push({ label: 'WorkWork', type: 'education' as TagType })
+        
+        return defaultTags
+      }
+      
+      const productData = {
+        name: generateTitle(),
+        description: generateDescription(),
+        author_id: user.id,
+        author_name: profile.username || 'Anonymous',
+        price: data.aiContent?.price || 29.99,
+        currency: data.aiContent?.currency || 'SOL',
+        category: generateCategory(),
+        image_url: '/default-project.jpg',
+        tags: JSON.stringify(generateTags()),
+        product_type: 'product',
+        status: 'active',
+        views: 0,
+        likes: 0,
+        rating: 0.0
+      }
+      
+      // Step 3: Save to database
+      setPublishStep('Saving to database...')
+      setProgress(70)
+      
+      const { data: savedProduct, error: dbError } = await supabase
+        .from('products')
+        .insert(productData)
+        .select()
+        .single()
+      
+      if (dbError) {
+        console.error('Database save error:', dbError)
+        throw new Error(`Failed to save product: ${dbError.message}`)
+      }
+      
+      console.log('Product saved to database:', savedProduct)
+      
+      // Step 4: Finalize
+      setPublishStep('Publishing complete!')
+      setProgress(100)
+      
+      // Combine workflow and database results
+      const finalResult = {
+        ...workflowResponse,
+        product: savedProduct,
+        productId: savedProduct.id,
+        productUrl: `/product/${savedProduct.id}`,
+        success: true
+      }
+      
+      setWorkflowResult(finalResult)
+      onWorkflowComplete(finalResult)
       setPublishSuccess(true)
       setIsPublishing(false)
-      clearInterval(progressInterval)
       
       // Move to results page after a short delay
       setTimeout(() => {
-        onNext() // Call onNext to move to the next step
+        onNext()
       }, 2000)
+      
     } catch (error) {
       console.error('Publishing failed:', error)
+      setPublishStep(`Publishing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setIsPublishing(false)
+      alert(`Publishing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -232,7 +318,7 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
       {isPublishing && (
         <div className="space-y-4">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>Processing...</span>
+            <span>{publishStep || 'Processing...'}</span>
             <span>{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -241,9 +327,11 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
               style={{ width: `${progress}%` }}
             ></div>
           </div>
-          <p className="text-center text-sm text-gray-500">
-            Elapsed time: {elapsedTime} seconds
-          </p>
+          {publishStep && (
+            <p className="text-center text-sm text-gray-600">
+              {publishStep}
+            </p>
+          )}
         </div>
       )}
 
