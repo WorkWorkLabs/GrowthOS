@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ProductData } from './ProductUploadFlow'
 import { useRouter } from 'next/navigation'
 import { PartyPopper, AlertTriangle, Rocket, Loader2 } from 'lucide-react'
-import { runDifyWorkflow } from '@/lib/dify'
+// import { runDifyWorkflow } from '@/lib/dify' // Temporarily disabled
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/providers/AuthProvider'
 import { TagType } from '@/types'
@@ -52,42 +52,7 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
     setElapsedTime(0)
 
     try {
-      // Step 1: Run Dify workflow (if needed)
-      setPublishStep('Running AI workflow...')
-      setProgress(20)
-      
-      const inputs: Record<string, unknown> = {
-        github: data.githubUrl || 'https://github.com/example/demo-project'
-      }
-      
-      if (data.zipUrl) {
-        inputs.landingpage = data.zipUrl
-      }
-      
-      if (data.difyFileId) {
-        inputs.readme = {
-          transfer_method: "local_file",
-          upload_file_id: data.difyFileId,
-          type: "document"
-        }
-      }
-
-      const userId = user.id || 'abc-123'
-      let workflowResponse: Record<string, unknown> = {}
-      
-      try {
-        workflowResponse = await runDifyWorkflow(inputs, userId)
-        console.log('Workflow response:', workflowResponse)
-      } catch (workflowError) {
-        console.warn('Dify workflow failed, continuing with manual data:', workflowError)
-        // Continue with publishing even if workflow fails
-      }
-      
-      // Step 2: Prepare product data
-      setPublishStep('Preparing product data...')
-      setProgress(40)
-      
-      // Generate title and description from upload data if AI content not available
+      // Step 1: Prepare helper functions
       const generateTitle = () => {
         if (data.aiContent?.title) return data.aiContent.title
         if (data.uploadType === 'github') return `GitHub Project: ${data.githubUrl?.split('/').pop() || 'Repository'}`
@@ -129,6 +94,29 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
         
         return defaultTags
       }
+
+      // Step 2: Generate test social media content (AI placeholder)
+      setPublishStep('Generating social media content...')
+      setProgress(20)
+      
+      // Mock social media generation  
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const productTitle = generateTitle()
+      const testSocialContent = {
+        tweet: `[TEST] 🚀 Just published "${productTitle}" on WorkWork! Check out this amazing ${data.uploadType} project. #WorkWork #Development #Test`,
+        xhs: `[TEST] 🎆 分享我在WorkWork上发布的新项目：${productTitle}！\n\n🔥 项目亮点：\n• 专业的${data.uploadType}教程\n• 实用的开发指导\n• 适合初学者入门\n\n#编程 #学习 #技术分享 #WorkWork`
+      }
+      
+      const workflowResponse = {
+        data: {
+          outputs: testSocialContent
+        }
+      }
+      
+      // Step 3: Prepare product data
+      setPublishStep('Preparing product data...')
+      setProgress(40)
       
       const productData = {
         name: generateTitle(),
@@ -147,7 +135,7 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
         rating: 0.0
       }
       
-      // Step 3: Save to database
+      // Step 4: Save to database
       setPublishStep('Saving to database...')
       setProgress(70)
       
@@ -164,7 +152,7 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
       
       console.log('Product saved to database:', savedProduct)
       
-      // Step 4: Finalize
+      // Step 5: Finalize
       setPublishStep('Publishing complete!')
       setProgress(100)
       

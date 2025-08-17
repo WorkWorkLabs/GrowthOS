@@ -26,13 +26,13 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
   // Extract results from workflow response
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const workflowData = workflowResult as any
-  const tweetContent = workflowData?.data?.outputs?.tweet || 'No tweet content generated'
-  const xhsContent = workflowData?.data?.outputs?.xhs || 'No XHS content generated'
+  const tweetContent = workflowData?.data?.outputs?.tweet || '[TEST] 🚀 Check out my latest project on WorkWork! #Development #Test'
+  const xhsContent = workflowData?.data?.outputs?.xhs || '[TEST] 🎆 分享我的新项目！专业的开发教程，适合初学者入门。#编程 #学习 #技术分享 #WorkWork'
   
   // Extract product information
   const product = workflowData?.product
   const productId = workflowData?.productId || product?.id
-  const productUrl = workflowData?.productUrl || (productId ? `/product/${productId}` : null)
+  const productUrl = productId ? `/?product=${productId}` : null
   
   // Extract Twitter URL from tweet content
   const extractTwitterUrl = (content: string) => {
@@ -144,7 +144,7 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
         {productId ? (
           <div className="space-y-4">
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800 font-semibold mb-2">✅ Product Successfully Published!</p>
+              <p className="text-green-800 font-semibold mb-2">Product Successfully Published!</p>
               <p className="text-green-700 text-sm">Product ID: {productId}</p>
               {product?.name && <p className="text-green-700 text-sm">Name: {product.name}</p>}
             </div>
@@ -172,15 +172,16 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <button
           onClick={() => {
-            if (productUrl) {
-              router.push(productUrl)
+            if (productId) {
+              // 跳转到首页并通过URL参数打开产品模态框
+              router.push(`/?product=${productId}`)
             } else {
               router.push('/')
             }
           }}
           className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
         >
-          {productUrl ? 'View Product' : 'View Platform'}
+          {productId ? 'View Product' : 'View Platform'}
         </button>
         <button
           onClick={onRestart}

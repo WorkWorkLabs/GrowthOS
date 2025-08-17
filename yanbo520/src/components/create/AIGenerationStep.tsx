@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ProductData, AIGeneratedContent } from './ProductUploadFlow'
-import { apiService } from '@/services/api'
+import { generateProductInfoFromReadme } from '@/lib/gemini'
 import { Bot, Loader2, CheckCircle, RotateCcw } from 'lucide-react'
 
 interface AIGenerationStepProps {
@@ -21,56 +21,109 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
     onUpdate({ isGenerating: true })
 
     try {
-      // Simulate AI content generation based on upload type
-      const steps = [
-        'Analyzing your project...',
-        'Extracting key features...',
-        'Generating product title...',
-        'Creating description...',
-        'Writing marketing copy...',
-        'Generating social media posts...',
-        'Finalizing content...'
-      ]
+      // 检查是否是README文件上传
+      const isReadmeUpload = data.uploadType === 'readme' && data.readmeContent
 
-      for (let i = 0; i < steps.length; i++) {
-        setGenerationStep(steps[i])
-        await new Promise(resolve => setTimeout(resolve, 800))
+      if (isReadmeUpload && data.readmeContent) {
+        // 使用真正的AI生成 (README文件)
+        const steps = [
+          'Analyzing README content...',
+          'Generating product title with AI...',
+          'Creating compelling description...',
+          'Writing marketing copy...',
+          'Extracting relevant keywords...',
+          'Finalizing AI-generated content...'
+        ]
+
+        for (let i = 0; i < steps.length; i++) {
+          setGenerationStep(steps[i])
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+
+        // 调用Gemini AI生成内容
+        const aiResult = await generateProductInfoFromReadme(data.readmeContent)
+        
+        const aiContent: AIGeneratedContent = {
+          title: aiResult.title,
+          description: aiResult.description,
+          marketingCopy: aiResult.marketing,
+          keywords: aiResult.keywords,
+          socialPosts: {
+            twitter: `🚀 Just published "${aiResult.title}" on WorkWork! Check out this amazing project. #Development #OpenSource #Tech`,
+            linkedin: `Excited to share my latest project: ${aiResult.title}. This comprehensive resource demonstrates practical solutions and provides valuable insights for developers and professionals.`
+          },
+          price: aiResult.price,
+          currency: aiResult.currency,
+          category: aiResult.category
+        }
+
+        setGenerationStep('AI content generation complete!')
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        onUpdate({ aiContent, isGenerating: false })
+        setIsGenerating(false)
+        setGenerationStep('')
+
+      } else {
+        // 其他类型仍使用测试内容
+        const steps = [
+          'Analyzing your project...',
+          'Extracting key features...',
+          'Generating product title...',
+          'Creating description...',
+          'Writing marketing copy...',
+          'Generating social media posts...',
+          'Finalizing content...'
+        ]
+
+        for (let i = 0; i < steps.length; i++) {
+          setGenerationStep(steps[i])
+          await new Promise(resolve => setTimeout(resolve, 800))
+        }
+
+        // 生成测试内容
+        const getSourceName = () => {
+          if (data.uploadType === 'github' && data.githubUrl) {
+            return data.githubUrl.split('/').pop() || 'GitHub Repository'
+          }
+          if (data.uploadType === 'video' && data.videoUrl) {
+            return 'Video Tutorial'
+          }
+          if (data.uploadType === 'zip') {
+            return 'Project Package'
+          }
+          return 'Test Project'
+        }
+
+        const sourceName = getSourceName()
+        
+        const aiContent: AIGeneratedContent = {
+          title: `[TEST] ${sourceName} - Professional Guide`,
+          description: `[TEST] This is a comprehensive guide for ${sourceName}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. This content is generated for testing purposes and demonstrates the AI content generation workflow.`,
+          marketingCopy: `[TEST] Discover the power of ${sourceName}! This comprehensive guide will transform your understanding and boost your skills. Perfect for developers, entrepreneurs, and learners who want to stay ahead of the curve.`,
+          keywords: ['test', 'demo', 'development', 'tutorial', data.uploadType],
+          socialPosts: {
+            twitter: `[TEST] 🚀 Just published my guide on ${sourceName}! Perfect for anyone looking to level up their skills. #Development #Learning #Test`,
+            linkedin: `[TEST] Excited to share my comprehensive guide on ${sourceName}. This resource provides practical insights and hands-on experience for professionals in the field.`
+          },
+          price: 29.99,
+          currency: 'SOL',
+          category: data.uploadType === 'github' ? 'development' : data.uploadType === 'video' ? 'education' : 'course'
+        }
+        
+        setGenerationStep('Content generation complete!')
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        onUpdate({ aiContent, isGenerating: false })
+        setIsGenerating(false)
+        setGenerationStep('')
       }
-
-      // Mock AI generated content based on file type
-      let baseContent = ''
-      if (data.uploadType === 'readme' && data.files.length > 0) {
-        baseContent = 'README-based project'
-      } else if (data.uploadType === 'zip' && data.files.length > 0) {
-        baseContent = 'Project landing page'
-      } else if (data.uploadType === 'github') {
-        baseContent = 'GitHub repository'
-      } else if (data.uploadType === 'video') {
-        baseContent = 'Video demonstration'
-      }
-
-      const aiContent: AIGeneratedContent = {
-        title: await apiService.generateAIContent(`Generate a catchy title for a ${baseContent}`, 'title'),
-        description: await apiService.generateAIContent(`Generate a detailed description for a ${baseContent}`, 'description'),
-        marketingCopy: await apiService.generateAIContent(`Generate marketing copy for a ${baseContent}`, 'social'),
-        keywords: ['web3', 'blockchain', 'crypto', 'course', 'digital nomad'],
-        socialPosts: {
-          twitter: await apiService.generateAIContent(`Generate Twitter post for a ${baseContent}`, 'social'),
-          linkedin: 'Professional post about your innovative project solution. Perfect for developers and entrepreneurs looking to expand their skillset.'
-        },
-        price: 199,
-        currency: 'USDC',
-        category: 'course'
-      }
-
-      onUpdate({ aiContent, isGenerating: false })
-      setIsGenerating(false)
-      setGenerationStep('')
+      
     } catch (error) {
       console.error('AI generation failed:', error)
       setIsGenerating(false)
       onUpdate({ isGenerating: false })
-      setGenerationStep('Generation failed. Please try again.')
+      setGenerationStep(`Generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

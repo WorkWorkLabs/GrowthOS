@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { ControlBar } from '@/components/ControlBar'
 import { ProjectGrid } from '@/components/ProjectGrid'
@@ -11,12 +12,16 @@ import { Project } from '@/types'
 export const dynamic = 'force-dynamic'
 
 export default function Home() {
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'time' | 'price' | 'likes' | 'views'>('time')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  
+  // 获取URL参数中的产品ID
+  const initialOpenProductId = searchParams.get('product')
 
   // 防抖处理搜索查询
   useEffect(() => {

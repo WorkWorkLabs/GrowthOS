@@ -1,13 +1,26 @@
 'use client'
 
+import { useEffect } from 'react'
 import type { Project } from '@/types'
 import { TAG_COLORS, DEFAULT_PROJECT_IMAGE } from '@/lib/constants'
 import { useModal } from '@/hooks/useModal'
 import { ProjectModal } from './ProjectModal'
 import { Eye, Heart, Star, CheckCircle } from 'lucide-react'
 
-export function ProjectCard(project: Project) {
+interface ProjectCardProps extends Project {
+  initialOpen?: boolean
+}
+
+export function ProjectCard(props: ProjectCardProps) {
+  const { initialOpen, ...project } = props
   const modal = useModal()
+  
+  // 如果有initialOpen属性，自动打开模态框
+  useEffect(() => {
+    if (initialOpen) {
+      modal.open()
+    }
+  }, [initialOpen, modal])
   
 
   return (

@@ -44,39 +44,35 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
     const uploadType = file.name.endsWith('.zip') ? 'zip' : 'readme'
     onUpdate({ files: fileList, uploadType })
 
-    // If it's a README file, upload it to Dify
+    // If it's a README file, read content and upload to Dify
     if (uploadType === 'readme') {
       // Start upload with progress
       onUpdate({ isUploading: true, uploadProgress: 0 })
       
-      // Simulate progress
-      let currentProgress = 0
-      const progressInterval = setInterval(() => {
-        currentProgress = Math.min(currentProgress + 20, 90)
-        onUpdate({ uploadProgress: currentProgress })
-      }, 200)
-      
-      try {
-        // For demo purposes, we'll use a fixed user ID
-        // In a real application, this should be the actual user ID
-        const userId = 'abc-123'
-        const uploadedFile = await uploadFileToDify(file, userId)
-        console.log('File uploaded to Dify:', uploadedFile)
+      // Read file content for Gemini AI (no Dify upload needed)
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const readmeContent = e.target?.result as string
         
-        // Complete progress
-        clearInterval(progressInterval)
-        onUpdate({ 
-          difyFileId: uploadedFile.id, 
-          isUploading: false, 
-          uploadProgress: 100 
-        })
-        setReadmeUploaded(true)
-      } catch (error) {
-        console.error('Failed to upload file to Dify:', error)
-        clearInterval(progressInterval)
-        onUpdate({ isUploading: false, uploadProgress: 0 })
-        // TODO: Handle error (show message to user)
+        // Simulate progress for user feedback
+        let currentProgress = 0
+        const progressInterval = setInterval(() => {
+          currentProgress = Math.min(currentProgress + 25, 100)
+          onUpdate({ uploadProgress: currentProgress })
+          
+          if (currentProgress >= 100) {
+            clearInterval(progressInterval)
+            onUpdate({ 
+              readmeContent: readmeContent, // Save README content for Gemini AI
+              isUploading: false, 
+              uploadProgress: 100 
+            })
+            setReadmeUploaded(true)
+          }
+        }, 200)
       }
+      
+      reader.readAsText(file)
     }
   }
 
