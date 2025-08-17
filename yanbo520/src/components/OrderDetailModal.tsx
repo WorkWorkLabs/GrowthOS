@@ -3,7 +3,6 @@
 import { createPortal } from 'react-dom'
 import { OrderWithProduct } from '@/lib/orders'
 import { 
-  X, 
   Calendar, 
   DollarSign, 
   User, 
@@ -25,7 +24,7 @@ interface OrderDetailModalProps {
   userRole: 'buyer' | 'seller'
 }
 
-export function OrderDetailModal({ order, isOpen, onClose, mounted, userRole }: OrderDetailModalProps) {
+export function OrderDetailModal({ order, isOpen, onClose, mounted }: OrderDetailModalProps) {
   if (!isOpen || !mounted || !order) return null
 
   const getStatusIcon = (status: string) => {

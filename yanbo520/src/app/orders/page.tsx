@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { OrdersService, OrderWithProduct } from '@/lib/orders'
 import { OrderStats } from '@/components/OrderStats'
@@ -49,14 +49,14 @@ export default function OrdersPage() {
     if (user) {
       loadOrders()
     }
-  }, [user, role, statusFilter])
+  }, [user, role, statusFilter, loadOrders])
 
   const handleViewOrder = (order: OrderWithProduct) => {
     setSelectedOrder(order)
     setShowDetailModal(true)
   }
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     if (!user) return
 
     setLoading(true)
@@ -77,7 +77,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user, role, statusFilter])
 
   const handleRetryOrder = async (orderId: string) => {
     if (!user) return

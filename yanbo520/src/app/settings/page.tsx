@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { SettingsService, UserSettings, UserApiKey, UserNotification } from '@/lib/settings'
 import { Header } from '@/components/Header'
@@ -10,12 +10,10 @@ import {
   Shield,
   Globe,
   Key,
-  Mail,
   Moon,
   Sun,
   Monitor,
   Eye,
-  EyeOff,
   Clock,
   DollarSign,
   Trash2,
@@ -49,9 +47,9 @@ export default function SettingsPage() {
     if (user) {
       loadSettings()
     }
-  }, [user])
+  }, [user, loadSettings])
 
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     if (!user) return
 
     setLoading(true)
@@ -71,7 +69,7 @@ export default function SettingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text })

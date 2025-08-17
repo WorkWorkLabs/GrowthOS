@@ -210,7 +210,7 @@ export class OrdersService {
         })
 
         // 激活流支付
-        const activation = await StreamFlowService.activateStream(stream.id)
+        await StreamFlowService.activateStream(stream.id)
 
         // 更新订单信息
         const { data: updatedOrder, error: updateError } = await supabase

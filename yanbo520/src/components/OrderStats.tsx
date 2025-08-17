@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { OrdersService } from '@/lib/orders'
 import { 
   ShoppingCart, 
@@ -32,9 +32,9 @@ export function OrderStats({ userId, role }: OrderStatsProps) {
 
   useEffect(() => {
     loadStats()
-  }, [userId, role])
+  }, [userId, role, loadStats])
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     setLoading(true)
     try {
       const statsData = await OrdersService.getOrderStats(userId, role)
@@ -44,7 +44,7 @@ export function OrderStats({ userId, role }: OrderStatsProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, role])
 
   if (loading) {
     return (

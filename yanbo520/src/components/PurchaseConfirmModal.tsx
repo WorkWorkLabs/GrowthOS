@@ -1,7 +1,7 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Project } from '@/types'
 import { useAuth } from '@/providers/AuthProvider'
 import { OrdersService } from '@/lib/orders'
@@ -12,10 +12,8 @@ import {
   CreditCard, 
   Building, 
   DollarSign, 
-  X, 
   AlertCircle, 
   CheckCircle,
-  Clock,
   Loader2,
   Calendar,
   Repeat
@@ -50,9 +48,9 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
     if (isOpen && user) {
       checkPaymentConditions()
     }
-  }, [isOpen, user])
+  }, [isOpen, user, checkPaymentConditions])
 
-  const checkPaymentConditions = async () => {
+  const checkPaymentConditions = useCallback(async () => {
     if (!user) return
     
     try {
@@ -66,7 +64,7 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
       console.error('Failed to check payment conditions:', error)
       setError('Failed to check payment conditions')
     }
-  }
+  }, [user])
 
   const handleMethodSelect = (method: PaymentMethod) => {
     setSelectedMethod(method)
@@ -411,7 +409,7 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
                 }
               </p>
               <div className="mt-4 text-sm text-gray-500">
-                This may take a few moments. Please don't close this window.
+                This may take a few moments. Please don&apos;t close this window.
               </div>
             </div>
           )}

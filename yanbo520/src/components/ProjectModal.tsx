@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { Project } from '@/types'
 import { TAG_COLORS, DEFAULT_PROJECT_IMAGE } from '@/lib/constants'
-import { ShoppingCart, MessageCircle, DollarSign, Eye, Heart, Star, CreditCard, Smartphone, Building } from 'lucide-react'
+import { ShoppingCart, MessageCircle, DollarSign, Eye, Heart, Star } from 'lucide-react'
 import { PurchaseConfirmModal } from './PurchaseConfirmModal'
 
 interface ProjectModalProps {
@@ -15,7 +15,6 @@ interface ProjectModalProps {
 }
 
 export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModalProps) {
-  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   
   if (!isOpen || !mounted) return null
