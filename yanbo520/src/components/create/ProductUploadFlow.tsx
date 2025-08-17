@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { FileUploadStep } from './FileUploadStep'
+import { AIGenerationStep } from './AIGenerationStep'
+import { PreviewStep } from './PreviewStep'
 import { PublishStep } from './PublishStep'
 import { ResultsStep } from './ResultsStep'
 
@@ -68,8 +70,9 @@ export function ProductUploadFlow() {
 
   const steps = [
     { number: 1, title: 'Upload Content', description: 'Select your project files or links' },
-    { number: 2, title: 'Publish', description: 'Confirm and publish to platform' },
-    { number: 3, title: 'Results', description: 'View your published product' }
+    { number: 2, title: 'AI Generation', description: 'Generate content with AI' },
+    { number: 3, title: 'Preview & Edit', description: 'Review and customize your product' },
+    { number: 4, title: 'Publish', description: 'Confirm and publish to platform' }
   ]
 
   return (
@@ -118,15 +121,33 @@ export function ProductUploadFlow() {
         )}
         
         {currentStep === 2 && (
+          <AIGenerationStep 
+            data={productData}
+            onUpdate={updateProductData}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        )}
+        
+        {currentStep === 3 && (
+          <PreviewStep 
+            data={productData}
+            onUpdate={updateProductData}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        )}
+        
+        {currentStep === 4 && !workflowResult && (
           <PublishStep 
             data={productData}
             onPrev={prevStep}
-            onNext={nextStep}
+            onNext={() => {}} // PublishStep handles its own completion
             onWorkflowComplete={setWorkflowResult}
           />
         )}
         
-        {currentStep === 3 && workflowResult && (
+        {currentStep === 4 && workflowResult && (
           <ResultsStep 
             data={productData}
             workflowResult={workflowResult}

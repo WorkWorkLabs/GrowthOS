@@ -182,10 +182,8 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
       setPublishSuccess(true)
       setIsPublishing(false)
       
-      // Move to results page after a short delay
-      setTimeout(() => {
-        onNext()
-      }, 2000)
+      // Results will be shown automatically via workflowResult state
+      // No need to call onNext() as the parent component handles the transition
       
     } catch (error) {
       console.error('Publishing failed:', error)
@@ -195,46 +193,10 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
     }
   }
 
-  if (publishSuccess && workflowResult) {
-    return (
-      <div className="text-center py-12">
-        <div className="mb-6">
-          <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
-        </div>
-        <h2 className="text-3xl font-bold text-green-600 mb-4">Product Published Successfully!</h2>
-        <p className="text-gray-600 mb-8 max-w-md mx-auto">
-          Your product is now live on the platform. Users can discover and purchase your content.
-        </p>
-        
-        <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 max-w-md mx-auto">
-            <h3 className="font-semibold text-green-800 mb-2">What&apos;s Next?</h3>
-            <ul className="text-sm text-green-700 space-y-1 text-left">
-              <li>• Share your product on social media</li>
-              <li>• Monitor sales and analytics</li>
-              <li>• Engage with your customers</li>
-              <li>• Update content as needed</li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => router.push('/')}
-              className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
-            >
-              View on Platform
-            </button>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Create Another Product
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // Don't render success state here - let ResultsStep handle it
+  // if (publishSuccess && workflowResult) {
+  //   Results will be shown by ResultsStep component
+  // }
 
   return (
     <div className="space-y-8">

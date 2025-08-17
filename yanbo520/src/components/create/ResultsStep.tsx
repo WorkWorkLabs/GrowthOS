@@ -48,7 +48,7 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
         <div className="mb-6">
           <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">🎉 Success! Your Product is Live</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">Success! Your Product is Live</h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Congratulations! Your product has been successfully published and is now live on the platform. 
           Here are the AI-generated social media posts for your product.
