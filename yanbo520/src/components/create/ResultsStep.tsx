@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ProductData } from './ProductUploadFlow'
 import { useRouter } from 'next/navigation'
 import { PartyPopper, FileText } from 'lucide-react'
+import { TwitterIcon } from '../icons/TwitterIcon'
 
 interface ResultsStepProps {
   data: ProductData
@@ -23,11 +24,27 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
     }, 2000)
   }
 
-  // Extract results from workflow response
+  // Extract results from AI generated content and workflow response
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const workflowData = workflowResult as any
-  const tweetContent = workflowData?.data?.outputs?.tweet || '[TEST] 🚀 Check out my latest project on WorkWork! #Development #Test'
-  const xhsContent = workflowData?.data?.outputs?.xhs || '[TEST] 🎆 分享我的新项目！专业的开发教程，适合初学者入门。#编程 #学习 #技术分享 #WorkWork'
+  
+  // Use AI generated social media content first, fallback to workflow or default
+  const tweetContent = data.aiContent?.socialPosts?.twitter || 
+                       workflowData?.data?.outputs?.tweet || 
+                       `🔥 GAME-CHANGER ALERT! Just dropped "${data.aiContent?.title || 'my revolutionary project'}" on WorkWork! This will blow your mind! 🚀🤯 Don't sleep on this! #WorkWork #GameChanger #MustHave #TechRevolution`
+                       
+  const xhsContent = data.aiContent?.socialPosts?.linkedin || 
+                     workflowData?.data?.outputs?.xhs || 
+                     `🎆 绝了！宝藏发现！${data.aiContent?.title || '我的神级项目'}强势登陆WorkWork！
+
+🔥 太香了，姐妹们必须冲：
+✨ ${data.aiContent?.category || '开发'}神器，效果炸裂！
+⚡ 零基础直接起飞
+🎯 实战干货，学到就是赚到！
+
+错过系列后悔！速度上车！🏃‍♀️💨
+
+#编程宝藏 #技能up #WorkWork #强推 #开发神器`
   
   // Extract product information
   const product = workflowData?.product
@@ -73,7 +90,9 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
           ) : (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
               <div className="flex items-center mb-4">
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+                <div className="w-16 h-16 bg-black rounded-xl flex items-center justify-center">
+                  <TwitterIcon size={32} className="text-white" />
+                </div>
                 <div className="ml-4">
                   <h3 className="font-bold text-gray-900">WorkWork Bot</h3>
                   <p className="text-gray-500 text-sm">@WorkWorkBot</p>
@@ -81,14 +100,28 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
               </div>
               
               <div className="mb-4">
-                <p className="text-gray-800 whitespace-pre-wrap">{tweetContent}</p>
+                <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{tweetContent}</p>
               </div>
               
-              <div className="flex justify-between text-gray-500 text-sm">
-                <span>12:45 PM · Aug 15, 2025</span>
+              <div className="flex items-center justify-between text-gray-500 text-sm border-t pt-3">
+                <div className="flex items-center space-x-4">
+                  <span>12:45 PM · Aug 15, 2025</span>
+                  <span className="flex items-center space-x-1">
+                    <span>💬</span>
+                    <span>0</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <span>🔄</span>
+                    <span>0</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <span>❤️</span>
+                    <span>0</span>
+                  </span>
+                </div>
                 <button 
                   onClick={() => copyToClipboard(tweetContent, 'tweet')}
-                  className="text-blue-500 hover:text-blue-700"
+                  className="text-blue-500 hover:text-blue-700 font-medium"
                 >
                   {copied.tweet ? 'Copied!' : 'Copy'}
                 </button>
@@ -111,7 +144,20 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
         {/* XHS Post */}
         <div className="bg-red-50 border border-red-200 rounded-xl p-6">
           <div className="flex items-center mb-4">
-            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+            <div className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden">
+              <img 
+                src="https://www.szniego.com/uploads/image/20230408/1680945993.png" 
+                alt="小红书"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to SVG icon if image fails to load
+                  e.currentTarget.style.display = 'none'
+                  const fallback = document.createElement('div')
+                  fallback.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-red-400 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">小红书</div>'
+                  e.currentTarget.parentNode?.appendChild(fallback)
+                }}
+              />
+            </div>
             <div className="ml-4">
               <h3 className="font-bold text-gray-900">WorkWork Bot</h3>
               <p className="text-gray-500 text-sm">小红书官方账号</p>
@@ -119,14 +165,24 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
           </div>
           
           <div className="mb-4">
-            <p className="text-gray-800 whitespace-pre-wrap">{xhsContent}</p>
+            <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{xhsContent}</p>
           </div>
           
-          <div className="flex justify-between text-gray-500 text-sm">
-            <span>12:45 PM · Aug 15, 2025</span>
+          <div className="flex items-center justify-between text-gray-500 text-sm border-t pt-3">
+            <div className="flex items-center space-x-4">
+              <span>12:45 PM · Aug 15, 2025</span>
+              <span className="flex items-center space-x-1">
+                <span>❤️</span>
+                <span>0</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>💬</span>
+                <span>0</span>
+              </span>
+            </div>
             <button 
               onClick={() => copyToClipboard(xhsContent, 'xhs')}
-              className="text-red-500 hover:text-red-700"
+              className="text-red-500 hover:text-red-700 font-medium"
             >
               {copied.xhs ? 'Copied!' : 'Copy'}
             </button>

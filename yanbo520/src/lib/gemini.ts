@@ -103,12 +103,18 @@ export async function generateProductInfoFromReadme(readmeContent: string) {
 
   const keywordsPrompt = `Generate ONLY 5 relevant keywords for this project. Return as comma-separated plain text, no markdown, no formatting, no quotes. Format: keyword1, keyword2, keyword3, keyword4, keyword5:\n\n${readmeContent.substring(0, 800)}...`
 
+  const twitterPrompt = `Generate an EXCITING Twitter post (max 280 chars) for this project. Make it sound revolutionary and impressive! Use power words like "breakthrough", "game-changer", "revolutionary". Include compelling emojis and trending hashtags. Make developers want to check it out immediately! Return PLAIN TEXT only:\n\n${readmeContent.substring(0, 800)}...`
+
+  const xhsPrompt = `Generate a VIRAL Chinese Xiaohongshu post for this project. Make it super engaging with lots of emojis! Use phrases like "绝了!", "太香了!", "强推!", "宝藏发现!". Include bullet points with benefits, make it sound exclusive and valuable. Create FOMO (fear of missing out). Max 500 chars, Chinese language, PLAIN TEXT only:\n\n${readmeContent.substring(0, 800)}...`
+
   try {
-    const [title, description, marketing, keywordsText] = await Promise.all([
+    const [title, description, marketing, keywordsText, twitterPost, xhsPost] = await Promise.all([
       generateWithGemini(titlePrompt),
       generateWithGemini(descriptionPrompt),
       generateWithGemini(marketingPrompt),
-      generateWithGemini(keywordsPrompt)
+      generateWithGemini(keywordsPrompt),
+      generateWithGemini(twitterPrompt),
+      generateWithGemini(xhsPrompt)
     ])
 
     // Parse keywords from comma-separated text
@@ -128,7 +134,11 @@ export async function generateProductInfoFromReadme(readmeContent: string) {
           url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
           alt: title + ' - Product Image'
         }
-      ]
+      ],
+      socialPosts: {
+        twitter: twitterPost,
+        linkedin: xhsPost // Use XHS content for linkedin field to maintain compatibility
+      }
     }
 
   } catch (error) {

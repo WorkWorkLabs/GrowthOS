@@ -214,7 +214,7 @@ export function FileUploadStep({ data, onUpdate, onNext }: FileUploadStepProps) 
             <p className="text-sm text-gray-600 mb-4">
               Link to your project demo video
             </p>
-            <span className="text-xs text-gray-500">(Coming Soon)</span>
+            <span className="text-xs text-gray-500"></span>
           </div>
         </div>
       </div>

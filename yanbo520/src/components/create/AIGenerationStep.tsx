@@ -48,10 +48,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           description: aiResult.description,
           marketingCopy: aiResult.marketing,
           keywords: aiResult.keywords,
-          socialPosts: {
-            twitter: `🚀 Just published "${aiResult.title}" on WorkWork! Check out this amazing project. #Development #OpenSource #Tech`,
-            linkedin: `Excited to share my latest project: ${aiResult.title}. This comprehensive resource demonstrates practical solutions and provides valuable insights for developers and professionals.`
-          },
+          socialPosts: aiResult.socialPosts, // 使用AI生成的社交媒体内容
           price: aiResult.price,
           currency: aiResult.currency,
           category: aiResult.category,
@@ -105,8 +102,17 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           marketingCopy: `[TEST] Discover the power of ${sourceName}! This comprehensive guide will transform your understanding and boost your skills. Perfect for developers, entrepreneurs, and learners who want to stay ahead of the curve.`,
           keywords: ['test', 'demo', 'development', 'tutorial', data.uploadType || 'general'],
           socialPosts: {
-            twitter: `[TEST] 🚀 Just published my guide on ${sourceName}! Perfect for anyone looking to level up their skills. #Development #Learning #Test`,
-            linkedin: `[TEST] Excited to share my comprehensive guide on ${sourceName}. This resource provides practical insights and hands-on experience for professionals in the field.`
+            twitter: `🔥 BREAKTHROUGH! Just launched "${sourceName} - Professional Guide" on WorkWork! This game-changer will revolutionize how you learn development! 🚀 Mind-blown by the results! 🤯 #WorkWork #GameChanger #MustHave #TechRevolution`,
+            linkedin: `🎆 绝了！发现宝藏资源！${sourceName} - 专业指南强势登陆WorkWork！
+
+🔥 太香了，必须安利：
+✨ 顶级开发教程，效果炸裂！
+⚡ 零基础秒变大佬
+🎯 实战案例，直接起飞！
+
+姐妹们冲！错过后悔系列！🏃‍♀️💨
+
+#编程宝藏 #技能up #WorkWork #强推 #开发神器`
           },
           price: 29.99,
           currency: 'SOL',

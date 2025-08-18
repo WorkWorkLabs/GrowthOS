@@ -370,6 +370,59 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
               ))}
             </div>
           </div>
+
+          {/* Social Media Preview */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="font-semibold mb-4">Social Media Posts Preview</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Twitter Preview */}
+              <div className="bg-white border rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center mr-2">
+                    <span className="text-white text-xs font-bold">𝕏</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">WorkWork Bot</p>
+                    <p className="text-gray-500 text-xs">@WorkWorkBot</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-800 leading-relaxed">
+                  {data.aiContent.socialPosts.twitter}
+                </p>
+              </div>
+
+              {/* Xiaohongshu Preview */}
+              <div className="bg-white border rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center mr-2 overflow-hidden">
+                    <img 
+                      src="https://www.szniego.com/uploads/image/20230408/1680945993.png" 
+                      alt="小红书"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to gradient background if image fails to load
+                        e.currentTarget.style.display = 'none'
+                        const fallback = document.createElement('div')
+                        fallback.className = 'w-8 h-8 bg-gradient-to-br from-red-400 to-pink-500 rounded-lg flex items-center justify-center text-white text-xs'
+                        fallback.textContent = '小红书'
+                        e.currentTarget.parentNode?.appendChild(fallback)
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">WorkWork Bot</p>
+                    <p className="text-gray-500 text-xs">小红书官方账号</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {data.aiContent.socialPosts.linkedin}
+                </p>
+              </div>
+            </div>
+            <p className="text-gray-500 text-xs mt-2">
+              💡 These will be shown on the final results page for easy copying and sharing
+            </p>
+          </div>
         </div>
       </div>
 
