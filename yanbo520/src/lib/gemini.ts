@@ -13,6 +13,7 @@ export interface GeminiResponse {
         text: string
       }>
     }
+    finishReason?: string
   }>
 }
 

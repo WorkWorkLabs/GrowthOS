@@ -103,7 +103,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           title: `[TEST] ${sourceName} - Professional Guide`,
           description: `[TEST] This is a comprehensive guide for ${sourceName}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. This content is generated for testing purposes and demonstrates the AI content generation workflow.`,
           marketingCopy: `[TEST] Discover the power of ${sourceName}! This comprehensive guide will transform your understanding and boost your skills. Perfect for developers, entrepreneurs, and learners who want to stay ahead of the curve.`,
-          keywords: ['test', 'demo', 'development', 'tutorial', data.uploadType],
+          keywords: ['test', 'demo', 'development', 'tutorial', data.uploadType || 'general'],
           socialPosts: {
             twitter: `[TEST] 🚀 Just published my guide on ${sourceName}! Perfect for anyone looking to level up their skills. #Development #Learning #Test`,
             linkedin: `[TEST] Excited to share my comprehensive guide on ${sourceName}. This resource provides practical insights and hands-on experience for professionals in the field.`
