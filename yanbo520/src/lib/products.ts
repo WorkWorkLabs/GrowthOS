@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { Project, Tag } from '@/types'
+import { Project, Tag, ProductImage } from '@/types'
 
 export interface ProductsFilter {
   category?: string
@@ -186,6 +186,9 @@ export class ProductsService {
 
   // 转换数据库数据为前端使用的格式
   static transformProduct(dbProduct: Record<string, unknown>): Project {
+    const images = ProductsService.parseImages(dbProduct.images)
+    const firstImage = images.length > 0 ? images[0].url : undefined
+    
     return {
       id: dbProduct.id as string,
       name: dbProduct.name as string,
@@ -196,8 +199,9 @@ export class ProductsService {
       price: parseFloat(dbProduct.price as string),
       currency: dbProduct.currency as string,
       category: dbProduct.category as string,
-      image: dbProduct.image_url as string,
-      image_url: dbProduct.image_url as string,
+      image: firstImage, // 向后兼容，使用第一张图片
+      image_url: firstImage, // 向后兼容，使用第一张图片
+      images: images, // 新的多图字段
       tags: ProductsService.parseTags(dbProduct.tags),
       views: (dbProduct.views as number) || 0,
       likes: (dbProduct.likes as number) || 0,
@@ -220,6 +224,21 @@ export class ProductsService {
       return Array.isArray(tagsJson) ? tagsJson : []
     } catch (error) {
       console.error('Error parsing tags:', error)
+      return []
+    }
+  }
+
+  // 解析图片JSON数据
+  static parseImages(imagesJson: unknown): ProductImage[] {
+    if (!imagesJson) return []
+    
+    try {
+      if (typeof imagesJson === 'string') {
+        return JSON.parse(imagesJson)
+      }
+      return Array.isArray(imagesJson) ? imagesJson : []
+    } catch (error) {
+      console.error('Error parsing images:', error)
       return []
     }
   }

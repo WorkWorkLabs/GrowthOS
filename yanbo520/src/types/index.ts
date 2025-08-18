@@ -5,6 +5,11 @@ export interface Tag {
   type: TagType
 }
 
+export interface ProductImage {
+  url: string
+  alt: string
+}
+
 export interface Project {
   id: string
   name: string
@@ -15,8 +20,9 @@ export interface Project {
   price: number
   currency: string
   category?: string
-  image?: string
-  image_url?: string
+  image?: string // 保留用于向后兼容
+  image_url?: string // 保留用于向后兼容
+  images?: ProductImage[] // 新的多图字段
   tags: Tag[]
   views?: number
   likes?: number

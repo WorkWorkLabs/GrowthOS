@@ -31,6 +31,8 @@ export type AIGeneratedContent = {
   price: number
   currency: string
   category: string
+  image_url: string // 保留用于向后兼容
+  images: { url: string; alt: string }[] // 新的多图字段
 }
 
 export type ProductData = UploadData & {

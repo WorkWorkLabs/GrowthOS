@@ -54,7 +54,9 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           },
           price: aiResult.price,
           currency: aiResult.currency,
-          category: aiResult.category
+          category: aiResult.category,
+          image_url: aiResult.image_url,
+          images: aiResult.images
         }
 
         setGenerationStep('AI content generation complete!')
@@ -108,7 +110,14 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           },
           price: 29.99,
           currency: 'SOL',
-          category: data.uploadType === 'github' ? 'development' : data.uploadType === 'video' ? 'education' : 'course'
+          category: data.uploadType === 'github' ? 'development' : data.uploadType === 'video' ? 'education' : 'course',
+          image_url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+          images: [
+            {
+              url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+              alt: `[TEST] ${sourceName} - Product Image`
+            }
+          ]
         }
         
         setGenerationStep('Content generation complete!')

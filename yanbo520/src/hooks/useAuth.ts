@@ -234,7 +234,7 @@ function convertToUserProfile(data: Record<string, unknown>): UserProfile {
     walletAddress: data.wallet_address as string | undefined,
     username: data.username as string,
     bio: (data.bio as string) || '',
-    avatar: (data.avatar as string) || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`,
+    avatar: (data.avatar as string) || 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
     social: {
       wechat: data.social_wechat as string | undefined,
       alipay: data.social_alipay as string | undefined,

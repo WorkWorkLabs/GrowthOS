@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { ProductData } from './ProductUploadFlow'
 import { Eye, Heart, Star, CheckCircle } from 'lucide-react'
+import { MultiImageEditor } from './MultiImageEditor'
+import { ImageCarousel } from '../ImageCarousel'
 
 interface PreviewStepProps {
   data: ProductData
@@ -14,6 +16,7 @@ interface PreviewStepProps {
 export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps) {
   const [editMode, setEditMode] = useState<string | null>(null)
   const [tempValues, setTempValues] = useState<Record<string, string | number>>({})
+  const [isEditingImages, setIsEditingImages] = useState(false)
 
   if (!data.aiContent) {
     return <div>No content to preview</div>
@@ -50,15 +53,13 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
         <div className="lg:col-span-1">
           <h3 className="font-semibold mb-4">Product Card Preview</h3>
           <div className="w-full max-w-[280px] h-[360px] bg-bg-primary rounded-lg shadow-card overflow-hidden flex flex-col">
-            <div 
-              className="h-[180px] w-full rounded-t-lg"
-              style={{
-                backgroundImage: `url(/project-image.png)`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
+            <div className="h-[180px] w-full rounded-t-lg overflow-hidden">
+              <ImageCarousel 
+                images={data.aiContent.images || []}
+                projectName={data.aiContent.title}
+                className="h-full"
+              />
+            </div>
             
             <div className="h-[180px] px-4 py-3 bg-white flex flex-col">
               {/* Header */}
@@ -133,6 +134,21 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
 
         {/* Editable Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Product Images */}
+          <MultiImageEditor
+            images={data.aiContent.images || []}
+            onChange={(images) => {
+              const updatedContent = { ...data.aiContent!, images }
+              // 更新image_url用于向后兼容
+              if (images.length > 0) {
+                updatedContent.image_url = images[0].url
+              }
+              onUpdate({ aiContent: updatedContent })
+            }}
+            isEditing={isEditingImages}
+            onEditToggle={() => setIsEditingImages(!isEditingImages)}
+          />
+
           {/* Title */}
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">

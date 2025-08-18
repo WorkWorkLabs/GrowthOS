@@ -126,7 +126,12 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
         price: data.aiContent?.price || 29.99,
         currency: data.aiContent?.currency || 'SOL',
         category: generateCategory(),
-        image_url: '/default-project.jpg',
+        images: JSON.stringify(data.aiContent?.images || [
+          {
+            url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+            alt: `${data.aiContent?.title || 'Product'} - Default Image`
+          }
+        ]),
         tags: JSON.stringify(generateTags()),
         product_type: 'product',
         status: 'active',

@@ -94,13 +94,13 @@ export async function generateWithGemini(prompt: string): Promise<string> {
  * @returns 生成的产品信息
  */
 export async function generateProductInfoFromReadme(readmeContent: string) {
-  const titlePrompt = `Generate a concise product title (max 50 chars) for this project:\n\n${readmeContent.substring(0, 800)}...`
+  const titlePrompt = `Generate ONLY a concise product title (max 50 chars) for this project. Return PLAIN TEXT only, no markdown, no formatting, no quotes, no prefixes. Just the title text:\n\n${readmeContent.substring(0, 800)}...`
 
-  const descriptionPrompt = `Generate a product description (max 200 words) highlighting key features and benefits for this project:\n\n${readmeContent.substring(0, 800)}...`
+  const descriptionPrompt = `Generate ONLY a product description (max 200 words) highlighting key features and benefits for this project. Return PLAIN TEXT only, no markdown formatting, no bullets, no bold text, no line breaks. Write as continuous prose:\n\n${readmeContent.substring(0, 800)}...`
 
-  const marketingPrompt = `Generate marketing copy (max 150 words) with persuasive tone for this project:\n\n${readmeContent.substring(0, 800)}...`
+  const marketingPrompt = `Generate ONLY marketing copy (max 150 words) with persuasive tone for this project. Return PLAIN TEXT only, no markdown formatting, no bullets, no bold text, no emojis. Write as continuous prose:\n\n${readmeContent.substring(0, 800)}...`
 
-  const keywordsPrompt = `Generate 5 relevant keywords (comma-separated) for this project:\n\n${readmeContent.substring(0, 800)}...`
+  const keywordsPrompt = `Generate ONLY 5 relevant keywords for this project. Return as comma-separated plain text, no markdown, no formatting, no quotes. Format: keyword1, keyword2, keyword3, keyword4, keyword5:\n\n${readmeContent.substring(0, 800)}...`
 
   try {
     const [title, description, marketing, keywordsText] = await Promise.all([
@@ -120,7 +120,14 @@ export async function generateProductInfoFromReadme(readmeContent: string) {
       keywords: keywords.slice(0, 5), // Limit to 5 keywords
       price: 29.99, // Default price
       currency: 'SOL',
-      category: 'development' // Default category for README-based projects
+      category: 'development', // Default category for README-based projects
+      image_url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4', // Default image
+      images: [
+        {
+          url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+          alt: title + ' - Product Image'
+        }
+      ]
     }
 
   } catch (error) {

@@ -6,6 +6,7 @@ import { Project } from '@/types'
 import { TAG_COLORS, DEFAULT_PROJECT_IMAGE } from '@/lib/constants'
 import { ShoppingCart, MessageCircle, DollarSign, Eye, Heart, Star } from 'lucide-react'
 import { PurchaseConfirmModal } from './PurchaseConfirmModal'
+import { ImageCarousel } from './ImageCarousel'
 
 interface ProjectModalProps {
   project: Project
@@ -63,15 +64,13 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
         </div>
         
         <div className="p-4">
-          <div 
-            className="w-full h-64 rounded-lg mb-4"
-            style={{
-              backgroundImage: `url(${project.image || project.image_url || DEFAULT_PROJECT_IMAGE})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
+          <div className="w-full mb-4">
+            <ImageCarousel 
+              images={project.images || []}
+              projectName={project.name}
+              className="w-full"
+            />
+          </div>
           
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-text-primary mb-2">Description</h3>

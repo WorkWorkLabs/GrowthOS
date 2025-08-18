@@ -111,7 +111,7 @@ class UserService {
     return {
       walletAddress,
       username: 'Digital Nomad',
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress}`,
+      avatar: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
       bio: 'Building the future of work with Web3 technologies',
       email: '',
       stats: {
@@ -139,7 +139,7 @@ class UserService {
       walletAddress: supabaseData.wallet_address,
       username: supabaseData.username,
       bio: supabaseData.bio || '',
-      avatar: supabaseData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${supabaseData.wallet_address}`,
+      avatar: supabaseData.avatar || 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
       email: '',
       stats: {
         totalSales: 0,

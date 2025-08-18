@@ -119,7 +119,7 @@ export function OrderDetailModal({ order, isOpen, onClose, mounted }: OrderDetai
               <div 
                 className="w-20 h-20 rounded-lg bg-cover bg-center flex-shrink-0"
                 style={{
-                  backgroundImage: `url(${order.product.image_url || '/default-project.jpg'})`
+                  backgroundImage: `url(${order.product.image_url || '/project-image.png'})`
                 }}
               />
               <div className="flex-1">
