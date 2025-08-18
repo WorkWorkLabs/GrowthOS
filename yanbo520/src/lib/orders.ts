@@ -38,7 +38,8 @@ export interface OrderWithProduct extends Order {
     description: string
     price: number
     currency: string
-    image_url?: string
+    images?: Array<{ url: string; alt: string }>
+    image_url?: string // 计算得出的向后兼容字段
     author_name: string
   }
   buyer: {
@@ -311,7 +312,7 @@ export class OrdersService {
         .select(`
           *,
           product:products!inner (
-            id, name, description, price, currency, image_url, author_name
+            id, name, description, price, currency, images, author_name
           ),
           buyer:users!orders_buyer_id_fkey (
             id, username, email
@@ -328,7 +329,18 @@ export class OrdersService {
         throw new Error(`Failed to fetch orders: ${error.message}`)
       }
 
-      return orders || []
+      // 转换数据并添加向后兼容的 image_url 字段
+      const transformedOrders = (orders || []).map(order => ({
+        ...order,
+        product: {
+          ...order.product,
+          image_url: order.product.images && order.product.images.length > 0 
+            ? order.product.images[0].url 
+            : 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4'
+        }
+      }))
+
+      return transformedOrders
     } catch (error) {
       console.error('OrdersService getUserOrders error:', error)
       throw error
@@ -347,7 +359,7 @@ export class OrdersService {
         .select(`
           *,
           product:products!inner (
-            id, name, description, price, currency, image_url, author_name
+            id, name, description, price, currency, images, author_name
           ),
           buyer:users!orders_buyer_id_fkey (
             id, username, email
@@ -364,7 +376,18 @@ export class OrdersService {
         throw new Error('Order not found or access denied')
       }
 
-      return order
+      // 转换数据并添加向后兼容的 image_url 字段
+      const transformedOrder = {
+        ...order,
+        product: {
+          ...order.product,
+          image_url: order.product.images && order.product.images.length > 0 
+            ? order.product.images[0].url 
+            : 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4'
+        }
+      }
+
+      return transformedOrder
     } catch (error) {
       console.error('OrdersService getOrderById error:', error)
       throw error

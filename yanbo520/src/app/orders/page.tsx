@@ -169,6 +169,42 @@ export default function OrdersPage() {
     })
   }
 
+  const formatErrorMessage = (errorMessage: string) => {
+    if (!errorMessage) return ''
+    
+    // 如果错误信息包含 HTML 内容，简化为通用错误信息
+    if (errorMessage.includes('<!DOCTYPE html>') || errorMessage.includes('<html')) {
+      return 'Payment processing failed. Please try again.'
+    }
+    
+    // 如果错误信息包含 StreamFlow API Error，提取主要信息
+    if (errorMessage.includes('StreamFlow API Error')) {
+      const match = errorMessage.match(/StreamFlow API Error \((\d+)\)/)
+      if (match) {
+        const statusCode = match[1]
+        switch (statusCode) {
+          case '404':
+            return 'Service temporarily unavailable'
+          case '400':
+            return 'Invalid payment request'
+          case '401':
+            return 'Authentication failed'
+          case '500':
+            return 'Payment service error'
+          default:
+            return 'Payment processing failed'
+        }
+      }
+    }
+    
+    // 如果错误信息很长，截断显示
+    if (errorMessage.length > 100) {
+      return errorMessage.substring(0, 100) + '...'
+    }
+    
+    return errorMessage
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-bg-blue flex items-center justify-center">
@@ -381,7 +417,7 @@ export default function OrdersPage() {
                       {/* Error Message */}
                       {order.error_message && (
                         <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-                          {order.error_message}
+                          {formatErrorMessage(order.error_message)}
                         </div>
                       )}
                     </div>

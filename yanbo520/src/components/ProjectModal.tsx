@@ -29,7 +29,7 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
         className="bg-white rounded-lg max-w-2xl max-h-[80vh] overflow-y-auto m-4 animate-slideUpAndScale" 
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-white border-b p-4 flex items-start justify-between">
+        <div className="sticky top-0 bg-white border-b p-4 flex items-start justify-between z-20 shadow-sm">
           <div className="flex-1">
             <h2 className="text-xl font-bold text-text-primary mb-1">{project.name}</h2>
             <p className="text-text-tertiary text-sm">by {project.author}</p>
@@ -37,18 +37,23 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
               <div className="flex items-center">
                 <DollarSign className="w-4 h-4 text-primary mr-1" />
                 <span className="text-primary text-lg font-bold font-brand mr-1">{project.currency}</span>
-                <span className="text-primary text-2xl font-bold font-brand">{project.price}</span>
+                <span className="text-primary text-2xl font-bold font-brand">
+                  {project.pricing_model === 'subscription' && project.subscription_price_per_period 
+                    ? project.subscription_price_per_period 
+                    : project.price}
+                </span>
                 {project.pricing_model === 'subscription' && project.subscription_period && (
                   <span className="text-primary text-sm font-medium ml-1">
-                    /{project.subscription_period === 'daily' ? '日' : 
-                      project.subscription_period === 'weekly' ? '周' :
-                      project.subscription_period === 'monthly' ? '月' : '年'}
+                    /{project.subscription_period === 'daily' ? 'day' : 
+                      project.subscription_period === 'weekly' ? 'week' :
+                      project.subscription_period === 'monthly' ? 'month' : 
+                      project.subscription_period === 'yearly' ? 'year' : 'period'}
                   </span>
                 )}
               </div>
               {project.pricing_model === 'subscription' && (
                 <div className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
-                  订阅制
+                  Subscription
                 </div>
               )}
               <div className="flex items-center gap-3 text-sm text-gray-600">
@@ -75,7 +80,7 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
           </button>
         </div>
         
-        <div className="p-4">
+        <div className="p-4 relative z-0">
           <div className="w-full mb-4">
             <ImageCarousel 
               images={project.images || []}
@@ -108,35 +113,35 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
           {/* Subscription Details */}
           {project.pricing_model === 'subscription' && project.subscription_prices && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-text-primary mb-2">订阅价格</h3>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">Subscription Pricing</h3>
               <div className="grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
                 {project.subscription_prices.daily && (
                   <div className="text-sm">
-                    <span className="text-gray-600">每日:</span>
+                    <span className="text-gray-600">Daily:</span>
                     <span className="font-medium ml-1">{project.currency} {project.subscription_prices.daily}</span>
                   </div>
                 )}
                 {project.subscription_prices.weekly && (
                   <div className="text-sm">
-                    <span className="text-gray-600">每周:</span>
+                    <span className="text-gray-600">Weekly:</span>
                     <span className="font-medium ml-1">{project.currency} {project.subscription_prices.weekly}</span>
                   </div>
                 )}
                 {project.subscription_prices.monthly && (
                   <div className="text-sm">
-                    <span className="text-gray-600">每月:</span>
+                    <span className="text-gray-600">Monthly:</span>
                     <span className="font-medium ml-1">{project.currency} {project.subscription_prices.monthly}</span>
                   </div>
                 )}
                 {project.subscription_prices.yearly && (
                   <div className="text-sm">
-                    <span className="text-gray-600">每年:</span>
+                    <span className="text-gray-600">Yearly:</span>
                     <span className="font-medium ml-1">{project.currency} {project.subscription_prices.yearly}</span>
                   </div>
                 )}
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                💡 订阅用户可以根据需要选择合适的订阅周期
+                Subscribers can choose the subscription period that suits their needs
               </p>
             </div>
           )}

@@ -66,7 +66,7 @@ export async function generateWithGemini(prompt: string, maxRetries: number = 3)
             temperature: 0.7,
             topP: 0.8,
             topK: 40,
-            maxOutputTokens: 2048,
+            maxOutputTokens: 4096,
           }
         })
       })
@@ -134,17 +134,19 @@ export async function generateWithGemini(prompt: string, maxRetries: number = 3)
  * @returns 生成的产品信息
  */
 export async function generateProductInfoFromReadme(readmeContent: string) {
-  const titlePrompt = `Generate ONLY a concise product title (max 50 chars) for this project. Return PLAIN TEXT only, no markdown, no formatting, no quotes, no prefixes. Just the title text:\n\n${readmeContent.substring(0, 800)}...`
+  const contentSnippet = readmeContent.substring(0, 600)
+  
+  const titlePrompt = `Generate ONLY a concise product title (max 50 chars) for this project. Return PLAIN TEXT only, no markdown, no formatting, no quotes, no prefixes. Just the title text:\n\n${contentSnippet}...`
 
-  const descriptionPrompt = `Generate ONLY a product description (max 200 words) highlighting key features and benefits for this project. Return PLAIN TEXT only, no markdown formatting, no bullets, no bold text, no line breaks. Write as continuous prose:\n\n${readmeContent.substring(0, 800)}...`
+  const descriptionPrompt = `Generate ONLY a product description (max 200 words) highlighting key features and benefits for this project. Return PLAIN TEXT only, no markdown formatting, no bullets, no bold text, no line breaks. Write as continuous prose:\n\n${contentSnippet}...`
 
-  const marketingPrompt = `Generate ONLY marketing copy (max 150 words) with persuasive tone for this project. Return PLAIN TEXT only, no markdown formatting, no bullets, no bold text, no emojis. Write as continuous prose:\n\n${readmeContent.substring(0, 800)}...`
+  const marketingPrompt = `Generate ONLY marketing copy (max 150 words) with persuasive tone for this project. Return PLAIN TEXT only, no markdown formatting, no bullets, no bold text, no emojis. Write as continuous prose:\n\n${contentSnippet}...`
 
-  const keywordsPrompt = `Generate ONLY 5 relevant keywords for this project. Return as comma-separated plain text, no markdown, no formatting, no quotes. Format: keyword1, keyword2, keyword3, keyword4, keyword5:\n\n${readmeContent.substring(0, 800)}...`
+  const keywordsPrompt = `Generate ONLY 5 relevant keywords for this project. Return as comma-separated plain text, no markdown, no formatting, no quotes. Format: keyword1, keyword2, keyword3, keyword4, keyword5:\n\n${contentSnippet}...`
 
-  const twitterPrompt = `Generate an EXCITING Twitter post (max 280 chars) for this project. Make it sound revolutionary and impressive! Use power words like "breakthrough", "game-changer", "revolutionary". Include compelling emojis and trending hashtags. Make developers want to check it out immediately! Return PLAIN TEXT only:\n\n${readmeContent.substring(0, 800)}...`
+  const twitterPrompt = `Generate an EXCITING Twitter post (max 280 chars) for this project. Make it sound revolutionary and impressive! Use power words like "breakthrough", "game-changer", "revolutionary". Include compelling emojis and trending hashtags. Make developers want to check it out immediately! Return PLAIN TEXT only:\n\n${contentSnippet}...`
 
-  const xhsPrompt = `Generate a VIRAL Chinese Xiaohongshu post for this project. Make it super engaging with lots of emojis! Use phrases like "绝了!", "太香了!", "强推!", "宝藏发现!". Include bullet points with benefits, make it sound exclusive and valuable. Create FOMO (fear of missing out). Max 500 chars, Chinese language, PLAIN TEXT only:\n\n${readmeContent.substring(0, 800)}...`
+  const xhsPrompt = `Generate a VIRAL Chinese Xiaohongshu post for this project. Make it super engaging with lots of emojis! Use phrases like "绝了!", "太香了!", "强推!", "宝藏发现!". Include bullet points with benefits, make it sound exclusive and valuable. Create FOMO (fear of missing out). Max 500 chars, Chinese language, PLAIN TEXT only:\n\n${contentSnippet}...`
 
   try {
     // 为了避免429错误，将并发请求分批执行

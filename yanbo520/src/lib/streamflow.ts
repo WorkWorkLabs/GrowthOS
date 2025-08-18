@@ -3,7 +3,7 @@ import { supabase } from './supabase'
 // StreamFlow API配置
 const STREAMFLOW_API_BASE = process.env.NODE_ENV === 'production' 
   ? 'https://api.streamflow.example.com' // 生产环境地址
-  : 'http://localhost:3000' // 开发环境地址
+  : 'http://localhost:8080' // 开发环境地址，避免与Next.js端口冲突
 
 // 类型定义
 export interface StreamFlowSeller {
@@ -67,6 +67,61 @@ export interface CreateStreamParams {
 
 // API请求封装
 async function streamflowRequest(endpoint: string, options: RequestInit = {}) {
+  // 在开发环境中使用模拟数据，避免调用不存在的API
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔄 Mock StreamFlow API call: ${endpoint}`, options.body ? JSON.parse(options.body as string) : {})
+    
+    // 模拟API延迟
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // 根据不同的端点返回模拟数据
+    if (endpoint === '/api/sellers' && options.method === 'POST') {
+      return {
+        success: true,
+        data: {
+          id: `seller_${Date.now()}`,
+          walletAddress: 'mock_wallet_address',
+          name: 'Mock Seller',
+          email: 'seller@example.com',
+          description: 'Mock seller account'
+        }
+      }
+    }
+    
+    if (endpoint.includes('/api/streams') && options.method === 'POST') {
+      return {
+        success: true,
+        data: {
+          id: `stream_${Date.now()}`,
+          status: 'PENDING',
+          treasuryAddress: 'mock_treasury',
+          feeAmount: '0.1'
+        }
+      }
+    }
+    
+    if (endpoint.includes('/activate') && options.method === 'POST') {
+      return {
+        success: true,
+        data: { status: 'ACTIVE' }
+      }
+    }
+    
+    if (endpoint.includes('/cancel') && options.method === 'POST') {
+      return {
+        success: true,
+        data: { status: 'CANCELLED' }
+      }
+    }
+    
+    // 默认成功响应
+    return {
+      success: true,
+      data: {}
+    }
+  }
+  
+  // 生产环境的真实API调用
   const url = `${STREAMFLOW_API_BASE}${endpoint}`
   
   const response = await fetch(url, {

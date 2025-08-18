@@ -42,6 +42,7 @@ export type AIGeneratedContent = {
     monthly?: number
     yearly?: number
   }
+  subscription_duration?: number
 }
 
 export type ProductData = UploadData & {

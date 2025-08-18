@@ -123,7 +123,7 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
         description: generateDescription(),
         author_id: user.id,
         author_name: profile.username || 'Anonymous',
-        price: data.aiContent?.price || 29.99,
+        price: data.aiContent?.price ?? 29.99,
         currency: data.aiContent?.currency || 'SOL',
         category: generateCategory(),
         images: data.aiContent?.images || [
@@ -133,7 +133,7 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
           }
         ],
         tags: JSON.stringify(generateTags()),
-        product_type: 'product',
+        product_type: data.aiContent?.pricing_model === 'subscription' ? 'subscription' : 'product',
         status: 'active',
         views: 0,
         likes: 0,
@@ -141,7 +141,11 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
         // 新的订阅模式字段
         pricing_model: data.aiContent?.pricing_model || 'one_time',
         subscription_period: data.aiContent?.subscription_period || null,
-        subscription_prices: data.aiContent?.subscription_prices || null
+        subscription_prices: data.aiContent?.subscription_prices || null,
+        subscription_price_per_period: data.aiContent?.pricing_model === 'subscription' 
+          ? (data.aiContent?.subscription_prices?.[data.aiContent.subscription_period || 'monthly'] ?? data.aiContent?.price ?? 0)
+          : null,
+        subscription_duration: data.aiContent?.pricing_model === 'subscription' ? (data.aiContent?.subscription_duration ?? 1) : null
       }
       
       // Step 4: Save to database

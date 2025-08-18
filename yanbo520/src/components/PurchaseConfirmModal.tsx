@@ -223,7 +223,7 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
                     <div>
                       <div>${project.subscription_price_per_period || project.price}/{project.subscription_period}</div>
                       <div className="text-sm font-normal text-gray-600">
-                        Total: ${totalAmount} for {project.subscription_duration} months
+                        Total: ${totalAmount} for {project.subscription_duration} {project.subscription_period}(s)
                       </div>
                     </div>
                   ) : (
@@ -345,7 +345,7 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
                         ${project.subscription_price_per_period || project.price} charged every {project.subscription_period}
                       </p>
                       <p className="text-blue-700 text-sm">
-                        Total duration: {project.subscription_duration} months
+                        Total duration: {project.subscription_duration} {project.subscription_period}(s)
                       </p>
                     </div>
                   </div>

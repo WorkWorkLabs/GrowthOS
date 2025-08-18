@@ -57,13 +57,16 @@ export function ProjectCard(props: ProjectCardProps) {
                   {project.currency}
                 </span>
                 <span className="text-primary text-2xl font-bold font-brand">
-                  {project.price}
+                  {project.pricing_model === 'subscription' && project.subscription_price_per_period 
+                    ? project.subscription_price_per_period 
+                    : project.price}
                 </span>
                 {project.pricing_model === 'subscription' && project.subscription_period && (
                   <div className="text-primary text-xs font-medium mt-0.5">
-                    /{project.subscription_period === 'daily' ? '日' : 
-                      project.subscription_period === 'weekly' ? '周' :
-                      project.subscription_period === 'monthly' ? '月' : '年'}
+                    /{project.subscription_period === 'daily' ? 'day' : 
+                      project.subscription_period === 'weekly' ? 'week' :
+                      project.subscription_period === 'monthly' ? 'month' : 
+                      project.subscription_period === 'yearly' ? 'year' : 'period'}
                   </div>
                 )}
               </div>
@@ -82,21 +85,24 @@ export function ProjectCard(props: ProjectCardProps) {
             </div>
           </div>
 
-          {/* Tags section */}
-          <div className="flex flex-wrap gap-1 mb-2 shrink-0">
-            {project.tags.slice(0, 2).map((tag, index) => (
-              <span
-                key={index}
-                className={`px-2 py-0.5 rounded-lg text-xs font-medium shadow-tag ${TAG_COLORS[tag.type]}`}
-              >
-                {tag.label}
-              </span>
-            ))}
-            {project.tags.length > 2 && (
-              <span className="text-text-secondary text-xs self-center">
-                +{project.tags.length - 2}
-              </span>
-            )}
+          {/* Tags section: fixed height to prevent overflow */}
+          <div className="h-[24px] mb-2 shrink-0 overflow-hidden">
+            <div className="flex flex-wrap gap-1">
+              {project.tags.slice(0, 2).map((tag, index) => (
+                <span
+                  key={index}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-medium shadow-tag ${TAG_COLORS[tag.type]} truncate max-w-[80px]`}
+                  title={tag.label}
+                >
+                  {tag.label}
+                </span>
+              ))}
+              {project.tags.length > 2 && (
+                <span className="text-text-secondary text-xs self-center">
+                  +{project.tags.length - 2}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Statistics: fixed at bottom */}

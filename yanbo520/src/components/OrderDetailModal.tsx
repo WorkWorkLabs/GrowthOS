@@ -27,6 +27,42 @@ interface OrderDetailModalProps {
 export function OrderDetailModal({ order, isOpen, onClose, mounted }: OrderDetailModalProps) {
   if (!isOpen || !mounted || !order) return null
 
+  const formatErrorMessage = (errorMessage: string) => {
+    if (!errorMessage) return ''
+    
+    // 如果错误信息包含 HTML 内容，简化为通用错误信息
+    if (errorMessage.includes('<!DOCTYPE html>') || errorMessage.includes('<html')) {
+      return 'Payment processing failed. Please try again.'
+    }
+    
+    // 如果错误信息包含 StreamFlow API Error，提取主要信息
+    if (errorMessage.includes('StreamFlow API Error')) {
+      const match = errorMessage.match(/StreamFlow API Error \((\d+)\)/)
+      if (match) {
+        const statusCode = match[1]
+        switch (statusCode) {
+          case '404':
+            return 'Service temporarily unavailable'
+          case '400':
+            return 'Invalid payment request'
+          case '401':
+            return 'Authentication failed'
+          case '500':
+            return 'Payment service error'
+          default:
+            return 'Payment processing failed'
+        }
+      }
+    }
+    
+    // 如果错误信息很长，截断显示
+    if (errorMessage.length > 200) {
+      return errorMessage.substring(0, 200) + '...'
+    }
+    
+    return errorMessage
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
@@ -302,7 +338,7 @@ export function OrderDetailModal({ order, isOpen, onClose, mounted }: OrderDetai
                 <AlertCircle className="w-5 h-5" />
                 Error Details
               </h3>
-              <p className="text-red-700 text-sm">{order.error_message}</p>
+              <p className="text-red-700 text-sm">{formatErrorMessage(order.error_message)}</p>
             </div>
           )}
         </div>

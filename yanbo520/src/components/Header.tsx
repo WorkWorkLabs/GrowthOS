@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { User, LogOut, Settings, Package, ShoppingBag } from 'lucide-react'
 import { BrandLogo } from './header/BrandLogo'
 import { AuthModal } from './auth/AuthModal'
@@ -11,6 +12,7 @@ export function Header() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const router = useRouter()
   
   const { user, profile, signOut } = useAuth()
 
@@ -63,7 +65,7 @@ export function Header() {
                   
                   <button
                     onClick={() => {
-                      window.location.href = '/profile'
+                      router.push('/profile')
                       setShowDropdown(false)
                     }}
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -74,7 +76,7 @@ export function Header() {
                   
                   <button
                     onClick={() => {
-                      console.log('My Projects clicked')
+                      router.push('/projects')
                       setShowDropdown(false)
                     }}
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -85,7 +87,7 @@ export function Header() {
                   
                   <button
                     onClick={() => {
-                      window.location.href = '/orders'
+                      router.push('/orders')
                       setShowDropdown(false)
                     }}
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -96,7 +98,7 @@ export function Header() {
                   
                   <button
                     onClick={() => {
-                      window.location.href = '/settings'
+                      router.push('/settings')
                       setShowDropdown(false)
                     }}
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"

@@ -16,11 +16,13 @@ interface SubscriptionPricingProps {
   oneTimePrice: number
   subscriptionPeriod?: 'daily' | 'weekly' | 'monthly' | 'yearly'
   subscriptionPrices?: SubscriptionPrices
+  subscriptionDuration?: number
   onChange: (data: {
     pricing_model: 'one_time' | 'subscription'
     price: number
     subscription_period?: 'daily' | 'weekly' | 'monthly' | 'yearly'
     subscription_prices?: SubscriptionPrices
+    subscription_duration?: number
   }) => void
 }
 
@@ -30,6 +32,7 @@ export function SubscriptionPricing({
   oneTimePrice,
   subscriptionPeriod,
   subscriptionPrices = {},
+  subscriptionDuration = 1,
   onChange
 }: SubscriptionPricingProps) {
   const [isEditing, setIsEditing] = useState(false)
@@ -43,12 +46,13 @@ export function SubscriptionPricing({
     yearly: subscriptionPrices.yearly || 199.99,
     ...subscriptionPrices
   })
+  const [tempSubscriptionDuration, setTempSubscriptionDuration] = useState<number>(subscriptionDuration)
 
   const periodLabels = {
-    daily: '每日',
-    weekly: '每周', 
-    monthly: '每月',
-    yearly: '每年'
+    daily: 'Daily',
+    weekly: 'Weekly', 
+    monthly: 'Monthly',
+    yearly: 'Yearly'
   }
 
   const handleSave = () => {
@@ -62,7 +66,8 @@ export function SubscriptionPricing({
         pricing_model: 'subscription',
         price: tempSubscriptionPrices[tempSubscriptionPeriod] || 0,
         subscription_period: tempSubscriptionPeriod,
-        subscription_prices: tempSubscriptionPrices
+        subscription_prices: tempSubscriptionPrices,
+        subscription_duration: tempSubscriptionDuration
       })
     }
     setIsEditing(false)
@@ -79,6 +84,7 @@ export function SubscriptionPricing({
       yearly: subscriptionPrices.yearly || 199.99,
       ...subscriptionPrices
     })
+    setTempSubscriptionDuration(subscriptionDuration)
     setIsEditing(false)
   }
 
@@ -86,24 +92,24 @@ export function SubscriptionPricing({
     return (
       <div className="bg-gray-50 rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold">定价模式</h4>
+          <h4 className="font-semibold">Pricing Model</h4>
           <button
             onClick={() => setIsEditing(true)}
             className="text-primary hover:text-blue-600 text-sm font-medium"
           >
-            编辑
+            Edit
           </button>
         </div>
         
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">模式:</span>
+            <span className="text-sm text-gray-600">Mode:</span>
             <span className={`px-2 py-1 rounded text-xs font-medium ${
               pricingModel === 'one_time' 
                 ? 'bg-blue-100 text-blue-800' 
                 : 'bg-purple-100 text-purple-800'
             }`}>
-              {pricingModel === 'one_time' ? '一次性购买' : '订阅制'}
+              {pricingModel === 'one_time' ? 'One-time' : 'Subscription'}
             </span>
           </div>
           
@@ -115,10 +121,10 @@ export function SubscriptionPricing({
                 {currency} {subscriptionPrices?.[subscriptionPeriod || 'monthly'] || 0} / {periodLabels[subscriptionPeriod || 'monthly']}
               </p>
               <div className="text-xs text-gray-500">
-                <div>日: {currency} {subscriptionPrices?.daily || 0.99}</div>
-                <div>周: {currency} {subscriptionPrices?.weekly || 4.99}</div>
-                <div>月: {currency} {subscriptionPrices?.monthly || 19.99}</div>
-                <div>年: {currency} {subscriptionPrices?.yearly || 199.99}</div>
+                <div>Daily: {currency} {subscriptionPrices?.daily || 0.99}</div>
+                <div>Weekly: {currency} {subscriptionPrices?.weekly || 4.99}</div>
+                <div>Monthly: {currency} {subscriptionPrices?.monthly || 19.99}</div>
+                <div>Yearly: {currency} {subscriptionPrices?.yearly || 199.99}</div>
               </div>
             </div>
           )}
@@ -130,21 +136,21 @@ export function SubscriptionPricing({
   return (
     <div className="bg-gray-50 rounded-lg p-4">
       <div className="flex items-center justify-between mb-4">
-        <h4 className="font-semibold">定价模式</h4>
+        <h4 className="font-semibold">Pricing Model</h4>
         <div className="flex space-x-2">
           <button
             onClick={handleSave}
             className="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-600 flex items-center space-x-1"
           >
             <Check className="w-3 h-3" />
-            <span>保存</span>
+            <span>Save</span>
           </button>
           <button
             onClick={handleCancel}
             className="px-3 py-1 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50 flex items-center space-x-1"
           >
             <X className="w-3 h-3" />
-            <span>取消</span>
+            <span>Cancel</span>
           </button>
         </div>
       </div>
@@ -152,7 +158,7 @@ export function SubscriptionPricing({
       {/* 定价模式选择 */}
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">定价模式</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Pricing Model</label>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -163,8 +169,8 @@ export function SubscriptionPricing({
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="font-medium">一次性购买</div>
-              <div className="text-xs text-gray-500">用户支付一次即可永久使用</div>
+              <div className="font-medium">One-time Purchase</div>
+              <div className="text-xs text-gray-500">Users pay once for permanent access</div>
             </button>
             
             <button
@@ -176,15 +182,15 @@ export function SubscriptionPricing({
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="font-medium">订阅制</div>
-              <div className="text-xs text-gray-500">用户按周期付费订阅</div>
+              <div className="font-medium">Subscription</div>
+              <div className="text-xs text-gray-500">Users pay periodically for access</div>
             </button>
           </div>
         </div>
 
         {tempPricingModel === 'one_time' ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">价格</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
             <div className="flex items-center space-x-2">
               <span className="text-gray-600">{currency}</span>
               <input
@@ -200,21 +206,39 @@ export function SubscriptionPricing({
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">主要订阅周期</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Primary Subscription Period</label>
               <select
                 value={tempSubscriptionPeriod}
                 onChange={(e) => setTempSubscriptionPeriod(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
               >
-                <option value="daily">每日订阅</option>
-                <option value="weekly">每周订阅</option>
-                <option value="monthly">每月订阅</option>
-                <option value="yearly">每年订阅</option>
+                <option value="daily">Daily Subscription</option>
+                <option value="weekly">Weekly Subscription</option>
+                <option value="monthly">Monthly Subscription</option>
+                <option value="yearly">Yearly Subscription</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">各周期价格</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Subscription Duration</label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={tempSubscriptionDuration}
+                  onChange={(e) => setTempSubscriptionDuration(Number(e.target.value))}
+                  className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent w-24"
+                />
+                <span className="text-sm text-gray-600">
+                  {tempSubscriptionPeriod}(s)
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">How many periods the subscription will last</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Pricing for Each Period</label>
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(periodLabels).map(([period, label]) => (
                   <div key={period}>

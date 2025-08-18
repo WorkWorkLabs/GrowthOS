@@ -60,6 +60,39 @@ export class ProductsService {
     }
   }
 
+  // 获取用户产品（包括所有状态）
+  static async getUserProducts(userId: string, includeDeleted = false): Promise<Project[]> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning empty array')
+      return []
+    }
+
+    try {
+      let query = supabase
+        .from('products')
+        .select('*')
+        .eq('author_id', userId)
+
+      if (!includeDeleted) {
+        query = query.neq('status', 'deleted')
+      }
+
+      query = query.order('created_at', { ascending: false })
+
+      const { data, error } = await query
+
+      if (error) {
+        console.error('Error fetching user products:', error)
+        return []
+      }
+
+      return data?.map(item => ProductsService.transformProduct(item)) || []
+    } catch (error) {
+      console.error('Error in getUserProducts:', error)
+      return []
+    }
+  }
+
   // 根据ID获取单个产品
   static async getProductById(id: string): Promise<Project | null> {
     if (!supabase) {
@@ -209,7 +242,14 @@ export class ProductsService {
       verified: true, // 可以基于作者验证状态设置
       status: dbProduct.status as 'active' | 'inactive' | 'deleted',
       created_at: dbProduct.created_at as string,
-      updated_at: dbProduct.updated_at as string
+      updated_at: dbProduct.updated_at as string,
+      // 订阅相关字段
+      product_type: dbProduct.product_type as 'product' | 'subscription',
+      pricing_model: dbProduct.pricing_model as 'one_time' | 'subscription',
+      subscription_period: dbProduct.subscription_period as 'daily' | 'weekly' | 'monthly' | 'yearly',
+      subscription_price_per_period: dbProduct.subscription_price_per_period ? parseFloat(dbProduct.subscription_price_per_period as string) : undefined,
+      subscription_duration: dbProduct.subscription_duration as number,
+      subscription_prices: ProductsService.parseSubscriptionPrices(dbProduct.subscription_prices)
     }
   }
 
@@ -240,6 +280,117 @@ export class ProductsService {
     } catch (error) {
       console.error('Error parsing images:', error)
       return []
+    }
+  }
+
+  // 解析订阅价格JSON数据
+  static parseSubscriptionPrices(pricesJson: unknown): { daily?: number; weekly?: number; monthly?: number; yearly?: number } | undefined {
+    if (!pricesJson) return undefined
+    
+    try {
+      if (typeof pricesJson === 'string') {
+        return JSON.parse(pricesJson)
+      }
+      return typeof pricesJson === 'object' ? pricesJson as { daily?: number; weekly?: number; monthly?: number; yearly?: number } : undefined
+    } catch (error) {
+      console.error('Error parsing subscription prices:', error)
+      return undefined
+    }
+  }
+
+  // 更新产品
+  static async updateProduct(productId: string, updates: Partial<{
+    name: string
+    description: string
+    price: number
+    currency: string
+    category: string
+    status: 'active' | 'inactive'
+    images: Array<{ url: string; alt: string }>
+    pricing_model: 'one_time' | 'subscription'
+    subscription_period: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    subscription_prices: { daily?: number; weekly?: number; monthly?: number; yearly?: number }
+    subscription_price_per_period: number | null
+    subscription_duration: number | null
+    product_type: 'product' | 'subscription'
+  }>): Promise<Project> {
+    if (!supabase) {
+      throw new Error('Supabase not configured')
+    }
+
+    try {
+      const updateData: Record<string, unknown> = { ...updates }
+      
+      // Convert images array to JSON if provided
+      if (updates.images) {
+        updateData.images = JSON.stringify(updates.images)
+      }
+      
+      // Convert subscription_prices to JSON if provided
+      if (updates.subscription_prices) {
+        updateData.subscription_prices = JSON.stringify(updates.subscription_prices)
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .update(updateData)
+        .eq('id', productId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating product:', error)
+        throw new Error(`Failed to update product: ${error.message}`)
+      }
+
+      return ProductsService.transformProduct(data)
+    } catch (error) {
+      console.error('Error in updateProduct:', error)
+      throw error
+    }
+  }
+
+  // 删除产品（软删除）
+  static async deleteProduct(productId: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase not configured')
+    }
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ status: 'deleted' })
+        .eq('id', productId)
+
+      if (error) {
+        console.error('Error deleting product:', error)
+        throw new Error(`Failed to delete product: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('Error in deleteProduct:', error)
+      throw error
+    }
+  }
+
+  // 永久删除产品
+  static async permanentDeleteProduct(productId: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase not configured')
+    }
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId)
+
+      if (error) {
+        console.error('Error permanently deleting product:', error)
+        throw new Error(`Failed to permanently delete product: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('Error in permanentDeleteProduct:', error)
+      throw error
     }
   }
 }

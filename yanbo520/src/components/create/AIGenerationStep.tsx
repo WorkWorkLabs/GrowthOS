@@ -125,7 +125,17 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
               url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
               alt: `[TEST] ${sourceName} - Product Image`
             }
-          ]
+          ],
+          // 默认为一次性购买，用户可以在预览步骤中修改为订阅
+          pricing_model: 'one_time',
+          subscription_period: undefined,
+          subscription_prices: {
+            daily: 0.99,
+            weekly: 4.99,
+            monthly: 19.99,
+            yearly: 199.99
+          },
+          subscription_duration: 1
         }
         
         setGenerationStep('Content generation complete!')
@@ -264,7 +274,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
             <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: '60%' }}></div>
           </div>
-          <p className="text-xs text-gray-500 mt-2">为避免频率限制，正在分批生成内容...</p>
+          <p className="text-xs text-gray-500 mt-2">Generating Content...</p>
         </div>
       )}
 

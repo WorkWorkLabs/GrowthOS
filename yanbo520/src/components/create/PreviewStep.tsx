@@ -84,9 +84,10 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
                     </span>
                     {data.aiContent.pricing_model === 'subscription' && data.aiContent.subscription_period && (
                       <div className="text-primary text-xs font-medium mt-0.5">
-                        /{data.aiContent.subscription_period === 'daily' ? '日' : 
-                          data.aiContent.subscription_period === 'weekly' ? '周' :
-                          data.aiContent.subscription_period === 'monthly' ? '月' : '年'}
+                        /{data.aiContent.subscription_period === 'daily' ? 'day' : 
+                          data.aiContent.subscription_period === 'weekly' ? 'week' :
+                          data.aiContent.subscription_period === 'monthly' ? 'month' : 
+                          data.aiContent.subscription_period === 'yearly' ? 'year' : 'period'}
                       </div>
                     )}
                   </div>
@@ -246,13 +247,15 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
             oneTimePrice={data.aiContent.price}
             subscriptionPeriod={data.aiContent.subscription_period}
             subscriptionPrices={data.aiContent.subscription_prices}
-            onChange={({pricing_model, price, subscription_period, subscription_prices}) => {
+            subscriptionDuration={data.aiContent.subscription_duration || 1}
+            onChange={({pricing_model, price, subscription_period, subscription_prices, subscription_duration}) => {
               const updatedContent = {
                 ...data.aiContent!,
                 pricing_model,
                 price,
                 subscription_period,
-                subscription_prices
+                subscription_prices,
+                subscription_duration
               }
               onUpdate({ aiContent: updatedContent })
             }}
@@ -346,14 +349,57 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
 
           {/* Keywords */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold mb-2">Keywords</h4>
-            <div className="flex flex-wrap gap-2">
-              {data.aiContent.keywords.map((keyword, index) => (
-                <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                  {keyword}
-                </span>
-              ))}
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-semibold">Keywords</h4>
+              {editMode !== 'keywords' && (
+                <button
+                  onClick={() => startEdit('keywords', data.aiContent!.keywords.join(', '))}
+                  className="text-primary hover:text-blue-600 text-sm font-medium"
+                >
+                  Edit
+                </button>
+              )}
             </div>
+            {editMode === 'keywords' ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={tempValues.keywords || ''}
+                  onChange={(e) => setTempValues({ ...tempValues, keywords: e.target.value })}
+                  placeholder="输入关键词，用逗号分隔"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500">用逗号分隔关键词，例如：AI, 机器学习, 开发工具</p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => {
+                      const keywordsArray = (tempValues.keywords as string).split(',').map(k => k.trim()).filter(k => k.length > 0)
+                      const updatedContent = { ...data.aiContent!, keywords: keywordsArray }
+                      onUpdate({ aiContent: updatedContent })
+                      setEditMode(null)
+                      setTempValues({})
+                    }}
+                    className="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-600"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="px-3 py-1 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {data.aiContent.keywords.map((keyword, index) => (
+                  <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                    {keyword}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Social Media Preview */}
@@ -405,7 +451,7 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
               </div>
             </div>
             <p className="text-gray-500 text-xs mt-2">
-              💡 These will be shown on the final results page for easy copying and sharing
+              These will be shown on the final results page for easy copying and sharing
             </p>
           </div>
         </div>
