@@ -59,6 +59,13 @@ export function ProjectCard(props: ProjectCardProps) {
                 <span className="text-primary text-2xl font-bold font-brand">
                   {project.price}
                 </span>
+                {project.pricing_model === 'subscription' && project.subscription_period && (
+                  <div className="text-primary text-xs font-medium mt-0.5">
+                    /{project.subscription_period === 'daily' ? '日' : 
+                      project.subscription_period === 'weekly' ? '周' :
+                      project.subscription_period === 'monthly' ? '月' : '年'}
+                  </div>
+                )}
               </div>
             </div>
           </div>

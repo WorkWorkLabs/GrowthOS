@@ -33,6 +33,15 @@ export type AIGeneratedContent = {
   category: string
   image_url: string // 保留用于向后兼容
   images: { url: string; alt: string }[] // 新的多图字段
+  // 订阅模式相关字段
+  pricing_model?: 'one_time' | 'subscription'
+  subscription_period?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+  subscription_prices?: {
+    daily?: number
+    weekly?: number
+    monthly?: number
+    yearly?: number
+  }
 }
 
 export type ProductData = UploadData & {

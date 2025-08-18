@@ -1,4 +1,6 @@
 export type TagType = 'ai' | 'crypto' | 'education'
+export type PricingModel = 'one_time' | 'subscription'
+export type SubscriptionPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
 export interface Tag {
   label: string
@@ -8,6 +10,13 @@ export interface Tag {
 export interface ProductImage {
   url: string
   alt: string
+}
+
+export interface SubscriptionPrices {
+  daily?: number
+  weekly?: number
+  monthly?: number
+  yearly?: number
 }
 
 export interface Project {
@@ -31,8 +40,12 @@ export interface Project {
   status?: 'active' | 'inactive' | 'deleted'
   created_at?: string
   updated_at?: string
+  // 新的订阅模式字段
+  pricing_model?: PricingModel
+  subscription_period?: SubscriptionPeriod
+  subscription_prices?: SubscriptionPrices
+  // 保留旧字段用于向后兼容
   product_type?: 'product' | 'subscription'
-  subscription_period?: 'monthly' | 'quarterly' | 'yearly'
   subscription_duration?: number
   subscription_price_per_period?: number
 }

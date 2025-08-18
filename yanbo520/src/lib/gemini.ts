@@ -18,75 +18,114 @@ export interface GeminiResponse {
 }
 
 /**
- * 调用Gemini API生成内容
+ * 等待指定毫秒数
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * 调用Gemini API生成内容，带重试机制
  * @param prompt 生成提示词
+ * @param maxRetries 最大重试次数
  * @returns 生成的文本内容
  */
-export async function generateWithGemini(prompt: string): Promise<string> {
+export async function generateWithGemini(prompt: string, maxRetries: number = 3): Promise<string> {
   if (!GEMINI_API_KEY) {
     throw new Error('Gemini API key is not configured')
   }
 
-  try {
-    const response = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.8,
-          topK: 40,
-          maxOutputTokens: 2048, // 增加输出token限制
-        }
-      })
-    })
+  let lastError: Error | null = null
 
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status} ${response.statusText}`)
-    }
-
-    const data: GeminiResponse = await response.json()
-    
-    if (!data.candidates || data.candidates.length === 0) {
-      throw new Error('No response from Gemini API')
-    }
-
-    const candidate = data.candidates[0]
-    if (!candidate || !candidate.content) {
-      throw new Error('Invalid response structure from Gemini API')
-    }
-
-    // 处理MAX_TOKENS情况 - content.parts可能为空
-    if (!candidate.content.parts || candidate.content.parts.length === 0) {
-      if (candidate.finishReason === 'MAX_TOKENS') {
-        throw new Error('Response truncated due to token limit. Please try with shorter content.')
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // 如果不是第一次尝试，添加延迟
+      if (attempt > 1) {
+        const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 10000) // 指数退避，最多10秒
+        console.log(`Attempt ${attempt}/${maxRetries} for Gemini API call, waiting ${delayMs}ms...`)
+        await delay(delayMs)
       }
-      throw new Error('No content in response from Gemini API')
-    }
 
-    const generatedText = candidate.content.parts[0]?.text || ''
-    if (!generatedText.trim()) {
-      throw new Error('Empty response from Gemini API')
-    }
-    
-    return generatedText.trim()
+      const response = await fetch(GEMINI_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GEMINI_API_KEY,
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topP: 0.8,
+            topK: 40,
+            maxOutputTokens: 2048,
+          }
+        })
+      })
 
-  } catch (error) {
-    console.error('Gemini API error:', error)
-    throw error
+      if (!response.ok) {
+        const errorText = await response.text()
+        const error = new Error(`Gemini API error: ${response.status}`)
+        
+        // 如果是429错误（频率限制）并且还有重试次数，继续重试
+        if (response.status === 429 && attempt < maxRetries) {
+          console.warn(`Rate limited (429), attempt ${attempt}/${maxRetries}`)
+          lastError = error
+          continue
+        }
+        
+        // 其他错误直接抛出
+        throw error
+      }
+
+      const data: GeminiResponse = await response.json()
+      
+      if (!data.candidates || data.candidates.length === 0) {
+        throw new Error('No response from Gemini API')
+      }
+
+      const candidate = data.candidates[0]
+      if (!candidate || !candidate.content) {
+        throw new Error('Invalid response structure from Gemini API')
+      }
+
+      // 处理MAX_TOKENS情况 - content.parts可能为空
+      if (!candidate.content.parts || candidate.content.parts.length === 0) {
+        if (candidate.finishReason === 'MAX_TOKENS') {
+          throw new Error('Response truncated due to token limit. Please try with shorter content.')
+        }
+        throw new Error('No content in response from Gemini API')
+      }
+
+      const generatedText = candidate.content.parts[0]?.text || ''
+      if (!generatedText.trim()) {
+        throw new Error('Empty response from Gemini API')
+      }
+      
+      // 成功获取响应，返回结果
+      return generatedText.trim()
+
+    } catch (error) {
+      console.error(`Gemini API error on attempt ${attempt}:`, error)
+      lastError = error as Error
+      
+      // 如果是最后一次尝试，抛出错误
+      if (attempt === maxRetries) {
+        break
+      }
+    }
   }
+
+  // 所有重试都失败了
+  throw lastError || new Error('All Gemini API retry attempts failed')
 }
 
 /**
@@ -108,11 +147,29 @@ export async function generateProductInfoFromReadme(readmeContent: string) {
   const xhsPrompt = `Generate a VIRAL Chinese Xiaohongshu post for this project. Make it super engaging with lots of emojis! Use phrases like "绝了!", "太香了!", "强推!", "宝藏发现!". Include bullet points with benefits, make it sound exclusive and valuable. Create FOMO (fear of missing out). Max 500 chars, Chinese language, PLAIN TEXT only:\n\n${readmeContent.substring(0, 800)}...`
 
   try {
-    const [title, description, marketing, keywordsText, twitterPost, xhsPost] = await Promise.all([
+    // 为了避免429错误，将并发请求分批执行
+    console.log('Starting AI content generation with sequential batches...')
+    
+    // 第一批：基础内容
+    const [title, description] = await Promise.all([
       generateWithGemini(titlePrompt),
-      generateWithGemini(descriptionPrompt),
+      generateWithGemini(descriptionPrompt)
+    ])
+    
+    // 短暂延迟后执行第二批
+    await delay(1000)
+    
+    // 第二批：营销内容
+    const [marketing, keywordsText] = await Promise.all([
       generateWithGemini(marketingPrompt),
-      generateWithGemini(keywordsPrompt),
+      generateWithGemini(keywordsPrompt)
+    ])
+    
+    // 再次延迟后执行第三批
+    await delay(1000)
+    
+    // 第三批：社交媒体内容
+    const [twitterPost, xhsPost] = await Promise.all([
       generateWithGemini(twitterPrompt),
       generateWithGemini(xhsPrompt)
     ])

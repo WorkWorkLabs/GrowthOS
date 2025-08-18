@@ -15,9 +15,11 @@ interface AIGenerationStepProps {
 export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGenerationStepProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationStep, setGenerationStep] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const generateContent = async () => {
     setIsGenerating(true)
+    setError(null) // 清除之前的错误
     onUpdate({ isGenerating: true })
 
     try {
@@ -138,7 +140,20 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
       console.error('AI generation failed:', error)
       setIsGenerating(false)
       onUpdate({ isGenerating: false })
-      setGenerationStep(`Generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      
+      let errorMessage = 'Unknown error'
+      if (error instanceof Error) {
+        if (error.message.includes('429')) {
+          errorMessage = 'API调用频率限制，请稍等几分钟后重试'
+        } else if (error.message.includes('API key')) {
+          errorMessage = 'API配置错误，请联系管理员'
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      setGenerationStep(`生成失败: ${errorMessage}`)
+      setError(errorMessage)
     }
   }
 
@@ -198,6 +213,48 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
         </div>
       )}
 
+      {/* Error Display */}
+      {error && !isGenerating && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-red-800">AI内容生成失败</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
+              <div className="mt-4">
+                <div className="flex space-x-4">
+                  <button
+                    onClick={generateContent}
+                    className="text-sm bg-red-100 text-red-800 px-3 py-2 rounded hover:bg-red-200 transition-colors"
+                  >
+                    重试生成
+                  </button>
+                  <button
+                    onClick={() => setError(null)}
+                    className="text-sm text-red-600 hover:text-red-500"
+                  >
+                    关闭
+                  </button>
+                </div>
+              </div>
+              {error.includes('频率限制') && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="text-sm text-yellow-800">
+                    💡 <strong>建议:</strong> Gemini API有调用频率限制。请等待1-2分钟后重试，或者考虑升级到更高级别的API配额。
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Generation Progress */}
       {isGenerating && (
         <div className="text-center py-12">
@@ -207,6 +264,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
             <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: '60%' }}></div>
           </div>
+          <p className="text-xs text-gray-500 mt-2">为避免频率限制，正在分批生成内容...</p>
         </div>
       )}
 

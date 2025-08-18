@@ -5,6 +5,7 @@ import { ProductData } from './ProductUploadFlow'
 import { Eye, Heart, Star, CheckCircle } from 'lucide-react'
 import { MultiImageEditor } from './MultiImageEditor'
 import { ImageCarousel } from '../ImageCarousel'
+import { SubscriptionPricing } from './SubscriptionPricing'
 
 interface PreviewStepProps {
   data: ProductData
@@ -81,6 +82,13 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
                     <span className="text-primary text-2xl font-bold font-brand">
                       {data.aiContent.price}
                     </span>
+                    {data.aiContent.pricing_model === 'subscription' && data.aiContent.subscription_period && (
+                      <div className="text-primary text-xs font-medium mt-0.5">
+                        /{data.aiContent.subscription_period === 'daily' ? '日' : 
+                          data.aiContent.subscription_period === 'weekly' ? '周' :
+                          data.aiContent.subscription_period === 'monthly' ? '月' : '年'}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -231,91 +239,68 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
             )}
           </div>
 
-          {/* Pricing */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold">Price</h4>
-                {editMode !== 'price' && (
-                  <button
-                    onClick={() => startEdit('price', data.aiContent!.price)}
-                    className="text-primary hover:text-blue-600 text-sm font-medium"
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
-              {editMode === 'price' ? (
-                <div className="space-y-2">
-                  <input
-                    type="number"
-                    value={tempValues.price || ''}
-                    onChange={(e) => setTempValues({ ...tempValues, price: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => saveEdit('price')}
-                      className="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-600"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={cancelEdit}
-                      className="px-3 py-1 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-800 font-bold">{data.aiContent.currency} {data.aiContent.price}</p>
-              )}
-            </div>
+          {/* Subscription Pricing */}
+          <SubscriptionPricing
+            currency={data.aiContent.currency}
+            pricingModel={data.aiContent.pricing_model || 'one_time'}
+            oneTimePrice={data.aiContent.price}
+            subscriptionPeriod={data.aiContent.subscription_period}
+            subscriptionPrices={data.aiContent.subscription_prices}
+            onChange={({pricing_model, price, subscription_period, subscription_prices}) => {
+              const updatedContent = {
+                ...data.aiContent!,
+                pricing_model,
+                price,
+                subscription_period,
+                subscription_prices
+              }
+              onUpdate({ aiContent: updatedContent })
+            }}
+          />
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold">Category</h4>
-                {editMode !== 'category' && (
-                  <button
-                    onClick={() => startEdit('category', data.aiContent!.category)}
-                    className="text-primary hover:text-blue-600 text-sm font-medium"
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
-              {editMode === 'category' ? (
-                <div className="space-y-2">
-                  <select
-                    value={tempValues.category || ''}
-                    onChange={(e) => setTempValues({ ...tempValues, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
-                  >
-                    <option value="course">Course</option>
-                    <option value="crypto">Crypto</option>
-                    <option value="ai">AI</option>
-                    <option value="education">Education</option>
-                  </select>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => saveEdit('category')}
-                      className="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-600"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={cancelEdit}
-                      className="px-3 py-1 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-800 capitalize">{data.aiContent.category}</p>
+          {/* Category */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-semibold">Category</h4>
+              {editMode !== 'category' && (
+                <button
+                  onClick={() => startEdit('category', data.aiContent!.category)}
+                  className="text-primary hover:text-blue-600 text-sm font-medium"
+                >
+                  Edit
+                </button>
               )}
             </div>
+            {editMode === 'category' ? (
+              <div className="space-y-2">
+                <select
+                  value={tempValues.category || ''}
+                  onChange={(e) => setTempValues({ ...tempValues, category: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="course">Course</option>
+                  <option value="crypto">Crypto</option>
+                  <option value="ai">AI</option>
+                  <option value="education">Education</option>
+                </select>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => saveEdit('category')}
+                    className="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-600"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="px-3 py-1 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-800 capitalize">{data.aiContent.category}</p>
+            )}
           </div>
 
           {/* Marketing Copy */}

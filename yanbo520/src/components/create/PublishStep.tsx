@@ -137,7 +137,11 @@ export function PublishStep({ data, onPrev, onNext, onWorkflowComplete }: Publis
         status: 'active',
         views: 0,
         likes: 0,
-        rating: 0.0
+        rating: 0.0,
+        // 新的订阅模式字段
+        pricing_model: data.aiContent?.pricing_model || 'one_time',
+        subscription_period: data.aiContent?.subscription_period || null,
+        subscription_prices: data.aiContent?.subscription_prices || null
       }
       
       // Step 4: Save to database

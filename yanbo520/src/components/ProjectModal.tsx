@@ -38,7 +38,19 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
                 <DollarSign className="w-4 h-4 text-primary mr-1" />
                 <span className="text-primary text-lg font-bold font-brand mr-1">{project.currency}</span>
                 <span className="text-primary text-2xl font-bold font-brand">{project.price}</span>
+                {project.pricing_model === 'subscription' && project.subscription_period && (
+                  <span className="text-primary text-sm font-medium ml-1">
+                    /{project.subscription_period === 'daily' ? '日' : 
+                      project.subscription_period === 'weekly' ? '周' :
+                      project.subscription_period === 'monthly' ? '月' : '年'}
+                  </span>
+                )}
               </div>
+              {project.pricing_model === 'subscription' && (
+                <div className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                  订阅制
+                </div>
+              )}
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <div className="flex items-center">
                   <Eye className="w-4 h-4 mr-1" />
@@ -92,6 +104,42 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
               ))}
             </div>
           </div>
+
+          {/* Subscription Details */}
+          {project.pricing_model === 'subscription' && project.subscription_prices && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-2">订阅价格</h3>
+              <div className="grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
+                {project.subscription_prices.daily && (
+                  <div className="text-sm">
+                    <span className="text-gray-600">每日:</span>
+                    <span className="font-medium ml-1">{project.currency} {project.subscription_prices.daily}</span>
+                  </div>
+                )}
+                {project.subscription_prices.weekly && (
+                  <div className="text-sm">
+                    <span className="text-gray-600">每周:</span>
+                    <span className="font-medium ml-1">{project.currency} {project.subscription_prices.weekly}</span>
+                  </div>
+                )}
+                {project.subscription_prices.monthly && (
+                  <div className="text-sm">
+                    <span className="text-gray-600">每月:</span>
+                    <span className="font-medium ml-1">{project.currency} {project.subscription_prices.monthly}</span>
+                  </div>
+                )}
+                {project.subscription_prices.yearly && (
+                  <div className="text-sm">
+                    <span className="text-gray-600">每年:</span>
+                    <span className="font-medium ml-1">{project.currency} {project.subscription_prices.yearly}</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                💡 订阅用户可以根据需要选择合适的订阅周期
+              </p>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="border-t pt-4">
