@@ -249,8 +249,6 @@ export function ProductEditModal({ project, isOpen, onClose, onUpdate }: Product
     </div>
   )
 
-  // Check if we're in the browser before using createPortal
-  if (typeof window === 'undefined') return null
-  
-  return createPortal(modalContent, document.body)
+  // Use mounted state instead of typeof window check to prevent hydration mismatch
+  return mounted ? createPortal(modalContent, document.body) : null
 }
