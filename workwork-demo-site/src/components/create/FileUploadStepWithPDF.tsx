@@ -328,7 +328,7 @@ export function FileUploadStepWithPDF({ data, onUpdate, onNext }: FileUploadStep
                   style={{ width: `${data.uploadProgress}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Uploading to Dify... {data.uploadProgress}%</p>
+              <p className="text-xs text-gray-500 mt-1">Uploading... {data.uploadProgress}%</p>
             </div>
           )}
         </div>
