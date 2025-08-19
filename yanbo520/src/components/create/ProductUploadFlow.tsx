@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileUploadStep } from './FileUploadStep'
+import { FileUploadStepWithPDF } from './FileUploadStepWithPDF'
 import { AIGenerationStep } from './AIGenerationStep'
 import { PreviewStep } from './PreviewStep'
 import { PublishStep } from './PublishStep'
@@ -125,7 +125,7 @@ export function ProductUploadFlow() {
       {/* Step Content */}
       <div className="p-8">
         {currentStep === 1 && (
-          <FileUploadStep 
+          <FileUploadStepWithPDF 
             data={productData}
             onUpdate={updateProductData}
             onNext={nextStep}

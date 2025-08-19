@@ -102,3 +102,6 @@ temp/
 
 # Cache
 .cache/
+
+# Large files
+public/AsposePDFforJS.wasm

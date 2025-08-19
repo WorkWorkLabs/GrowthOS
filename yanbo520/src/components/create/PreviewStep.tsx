@@ -133,7 +133,7 @@ export function PreviewStep({ data, onUpdate, onNext, onPrev }: PreviewStepProps
                   </div>
                 </div>
                 
-                <div className="text-green-500 text-sm" title="Verified Creator">
+                <div className="text-blue-500 text-sm" title="Verified Creator">
                   <CheckCircle className="w-4 h-4" />
                 </div>
               </div>

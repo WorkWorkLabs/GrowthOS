@@ -282,7 +282,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
       {hasContent && data.aiContent && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-green-600 flex items-center space-x-2">
+            <h3 className="text-xl font-semibold text-blue-600 flex items-center space-x-2">
               <CheckCircle className="w-6 h-6" />
               <span>Content Generated Successfully</span>
             </h3>

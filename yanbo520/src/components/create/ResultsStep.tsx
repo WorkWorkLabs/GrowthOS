@@ -63,7 +63,7 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
     <div className="space-y-8">
       <div className="text-center">
         <div className="mb-6">
-          <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
+          <PartyPopper className="w-16 h-16 mx-auto text-blue-500" />
         </div>
         <h2 className="text-3xl font-bold text-gray-900 mb-4">Success! Your Product is Live</h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
@@ -199,10 +199,10 @@ export function ResultsStep({ data, workflowResult, onRestart }: ResultsStepProp
         </p>
         {productId ? (
           <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800 font-semibold mb-2">Product Successfully Published!</p>
-              <p className="text-green-700 text-sm">Product ID: {productId}</p>
-              {product?.name && <p className="text-green-700 text-sm">Name: {product.name}</p>}
+            <div className="bg-[#f9fafc] border border-gray-200 rounded-lg p-4">
+              <p className="text-blue-800 font-semibold mb-2">Product Successfully Published!</p>
+              <p className="text-blue-700 text-sm">Product ID: {productId}</p>
+              {product?.name && <p className="text-blue-700 text-sm">Name: {product.name}</p>}
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <div className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-800 font-mono text-sm break-all max-w-md">
