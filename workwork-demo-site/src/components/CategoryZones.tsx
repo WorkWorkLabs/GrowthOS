@@ -8,8 +8,7 @@ import {
   Building2,
   Grid3X3
 } from 'lucide-react'
-
-export type ProductZone = 'courses' | 'products' | 'services' | 'events' | 'accommodation' | 'all'
+import { ProductZone } from '@/types'
 
 interface CategoryZonesProps {
   activeZone?: ProductZone
