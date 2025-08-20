@@ -1,4 +1,4 @@
-# GrowthOS (formerly WorkWork)
+# GrowthOS
 
 **Work everywhere, Work anytime, GrowthOS**
 
@@ -13,7 +13,7 @@ The platform helps users realize the freedom to work and live across geographica
 ### The Perfect Timing
 
 - **Post-Pandemic Remote Revolution**: Companies and individuals worldwide have embraced remote work as a long-term trend
-- **AI Agent Explosion**: AI tools are rapidly democratizing product creation, but super-individuals lack platforms to showcase and monetize their work  
+- **AI Agent Explosion**: AI tools are rapidly democratizing product creation, but super-individuals lack platforms to showcase and monetize their work
 - **Web3 Window of Opportunity**: The Web3 ecosystem is actively supporting AgentFi and individual entrepreneurship with significant funding
 - **Rise of Super-Individuals**: More young people are choosing freelancing and one-person companies, needing complete value chain support
 - **Market Gap**: Existing platforms (Nomad List, RemoteOK) focus on single aspects rather than comprehensive solutions
@@ -30,7 +30,7 @@ GrowthOS is positioned as the **"Super Individual Operating System in the AI Age
 ## 🎯 Target Market
 
 - **Total Addressable Market**: $2T global remote work market
-- **Serviceable Market**: $5B (100M+ remote workers globally)  
+- **Serviceable Market**: $5B (100M+ remote workers globally)
 - **Target**: 1M users within 3 years, $30M revenue through SaaS, recruitment, training, and commerce integrations
 
 ## 💡 Core Features
@@ -41,7 +41,7 @@ Our platform addresses all four elements of IKIGAI:
 
 - **💰 What you can be paid for**: High-quality remote jobs, project collaboration, freelance product launch assistance, task matching, skill courses, crypto payment support
 - **❤️ What you love**: Career path exploration through destination guides, interest communities, offline events
-- **🎯 What you are good at**: Skills demonstration, portfolio showcasing, course learning, rating mechanisms  
+- **🎯 What you are good at**: Skills demonstration, portfolio showcasing, course learning, rating mechanisms
 - **🌍 What the world needs**: Socially meaningful work opportunities, pro bono programs, sustainable entrepreneurship
 
 ### Technology Stack
@@ -60,7 +60,7 @@ workwork-demo-site/
 ├── src/
 │   ├── app/                    # Next.js App Router pages
 │   │   ├── create/            # Product creation flow
-│   │   ├── projects/          # Projects marketplace  
+│   │   ├── projects/          # Projects marketplace
 │   │   ├── profile/           # User profiles
 │   │   ├── orders/            # Order management
 │   │   └── settings/          # User settings
@@ -82,7 +82,7 @@ workwork-demo-site/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Supabase account (for backend)
 
@@ -117,7 +117,7 @@ npm run dev
 
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build for production
-- `npm start` - Start production server  
+- `npm start` - Start production server
 - `npm run lint` - Run ESLint
 
 ## 💰 Why Crypto Payments?
@@ -138,14 +138,14 @@ Traditional payment solutions like Stripe charge **3%+ fees** plus additional co
 ## 🌍 Market Validation
 
 - **RemoteOK**: 2M+ users
-- **Nomad List**: 500K+ paid members  
+- **Nomad List**: 500K+ paid members
 - **25%** of 40-80M global digital nomads use cryptocurrency
 - **66%** of crypto-nomads primarily use Bitcoin
 
-## 🎮 Competitive Advantages  
+## 🎮 Competitive Advantages
 
 - **Differentiated Positioning**: Complete value chain vs. single-aspect solutions
-- **AI + Crypto Dual Engine**: Next-generation productivity and payment infrastructure  
+- **AI + Crypto Dual Engine**: Next-generation productivity and payment infrastructure
 - **Community Network Effects**: Jobs, education, products, events create virtuous cycles
 - **First-Mover Advantage**: No platform-level "AI Agent + Super Individual" hosting exists
 - **Experienced Team**: Digital nomads with deep technical expertise in AI, Crypto, and Web3
