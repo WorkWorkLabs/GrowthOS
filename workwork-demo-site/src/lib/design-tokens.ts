@@ -1,7 +1,7 @@
 // 设计系统 - 从Figma提取的设计规范
 export const colors = {
   // 主要颜色
-  primary: '#48A7DD',
+  primary: '#16b4f2',
   
   // 文本颜色
   text: {

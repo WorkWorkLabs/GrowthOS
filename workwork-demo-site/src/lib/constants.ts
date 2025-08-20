@@ -15,7 +15,7 @@ export const FILTER_OPTIONS = [
 
 export const DEFAULT_PROJECT_IMAGE = '/project-image.png'
 
-export const BRAND_LOGO_URL = 'https://github.com/WorkWorkLabs/.github/raw/main/profile/Work-Work_font_logo.png'
+export const BRAND_LOGO_URL = '/growthos-logo-new.png'
 
 export const DEFAULT_USER = {
   username: 'Username',
