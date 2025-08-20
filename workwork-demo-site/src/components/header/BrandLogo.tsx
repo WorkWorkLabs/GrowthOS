@@ -10,7 +10,7 @@ export function BrandLogo() {
     >
       <Image 
         src={BRAND_LOGO_URL}
-        alt="Work Work Logo" 
+        alt="GrowthOS Logo" 
         width={128}
         height={32}
         className="h-8 w-auto object-contain rounded-lg"

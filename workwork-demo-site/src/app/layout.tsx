@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WorkWork",
+  title: "GrowthOS",
   description: "The ultimate marketplace for Web3 and AI products - discover, buy, and sell innovative digital solutions",
   icons: {
     icon: [
