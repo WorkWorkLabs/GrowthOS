@@ -6,6 +6,7 @@ import { Project } from '@/types'
 import { useAuth } from '@/providers/AuthProvider'
 import { OrdersService } from '@/lib/orders'
 import { StreamFlowUtils } from '@/lib/streamflow'
+import { supabase } from '@/lib/supabase'
 import { 
   ShoppingCart, 
   MessageCircle, 
@@ -27,7 +28,7 @@ interface PurchaseConfirmModalProps {
 }
 
 type PaymentMethod = 'solana' | 'wechat' | 'alipay' | 'card'
-type PurchaseStep = 'select-method' | 'confirm-details' | 'processing' | 'success' | 'error'
+type PurchaseStep = 'select-method' | 'confirm-details' | 'sablier-payment' | 'processing' | 'success' | 'error'
 
 export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: PurchaseConfirmModalProps) {
   const { user, profile } = useAuth()
@@ -36,12 +37,34 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [orderId, setOrderId] = useState<string | null>(null)
+  const [sellerWalletAddress, setSellerWalletAddress] = useState<string | null>(null)
   const [paymentConditions, setPaymentConditions] = useState<{
     canPay: boolean
     hasWallet: boolean
     hasPaymentMethod: boolean
     missingRequirements: string[]
   } | null>(null)
+
+  const fetchSellerWalletAddress = useCallback(async () => {
+    if (!project.author_id || !supabase) return
+    
+    try {
+      const { data: seller, error } = await supabase
+        .from('users')
+        .select('wallet_address')
+        .eq('id', project.author_id)
+        .single()
+        
+      if (error) {
+        console.error('Failed to fetch seller wallet address:', error)
+        return
+      }
+      
+      setSellerWalletAddress(seller?.wallet_address || null)
+    } catch (error) {
+      console.error('Error fetching seller wallet address:', error)
+    }
+  }, [project.author_id])
 
   const checkPaymentConditions = useCallback(async () => {
     if (!user) return
@@ -59,12 +82,13 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
     }
   }, [user])
 
-  // 检查支付条件
+  // 检查支付条件并获取卖家钱包地址
   useEffect(() => {
     if (isOpen && user) {
       checkPaymentConditions()
+      fetchSellerWalletAddress()
     }
-  }, [isOpen, user, checkPaymentConditions])
+  }, [isOpen, user, checkPaymentConditions, fetchSellerWalletAddress])
 
   const handleMethodSelect = (method: PaymentMethod) => {
     setSelectedMethod(method)
@@ -87,6 +111,13 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
   const handleConfirmPurchase = async () => {
     if (!user || !selectedMethod) return
     
+    // 如果选择的是加密支付，直接跳转到 Sablier iframe
+    if (selectedMethod === 'solana') {
+      setStep('sablier-payment')
+      return
+    }
+    
+    // 其他支付方式的原有逻辑
     setLoading(true)
     setError(null)
     setStep('processing')
@@ -147,6 +178,7 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
     setSelectedMethod(null)
     setError(null)
     setOrderId(null)
+    setSellerWalletAddress(null)
     setLoading(false)
   }
 
@@ -176,6 +208,7 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
           <h2 className="text-xl font-bold text-text-primary">
             {step === 'select-method' && 'Choose Payment Method'}
             {step === 'confirm-details' && 'Confirm Purchase'}
+            {step === 'sablier-payment' && 'Complete Payment'}
             {step === 'processing' && 'Processing Payment'}
             {step === 'success' && 'Purchase Successful'}
             {step === 'error' && 'Payment Failed'}
@@ -393,6 +426,69 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
                       Confirm Purchase
                     </>
                   )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'sablier-payment' && (
+            <div>
+              <h4 className="text-lg font-semibold text-gray-800 mb-4">Complete Your Payment with Sablier</h4>
+              
+              {/* Sablier iframe */}
+              <div className="mb-6 border rounded-lg overflow-hidden">
+                {sellerWalletAddress ? (
+                  <iframe
+                    src={`https://app.sablier.com/payments/create/?recipient=${encodeURIComponent(sellerWalletAddress)}&amount=${totalAmount}&token=ETH&duration=${isSubscription ? project.subscription_duration || 1 : 1}`}
+                    width="100%"
+                    height="600px"
+                    frameBorder="0"
+                    style={{ border: 'none' }}
+                    title="Sablier Payment"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-[600px] bg-gray-50">
+                    <div className="text-center">
+                      <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+                      <p className="text-gray-600">Loading payment interface...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Payment Instructions */}
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <DollarSign className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-blue-800">Payment Instructions</p>
+                    <p className="text-blue-700 text-sm mt-1">
+                      {isSubscription 
+                        ? `Complete your ${project.subscription_period} payment stream of $${totalAmount} to ${project.author}`
+                        : `Send $${totalAmount} to ${project.author} using the Sablier interface above`
+                      }
+                    </p>
+                    <p className="text-blue-700 text-sm mt-2">
+                      Once the payment is completed, click &quot;Payment Complete&quot; below.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep('confirm-details')}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setStep('success')}
+                  className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Payment Complete
                 </button>
               </div>
             </div>
