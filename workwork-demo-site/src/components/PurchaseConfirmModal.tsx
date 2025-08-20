@@ -127,7 +127,7 @@ export function PurchaseConfirmModal({ project, isOpen, onClose, mounted }: Purc
       const order = await OrdersService.createOrder({
         productId: project.id,
         buyerId: user.id,
-        buyerWalletAddress: selectedMethod === 'solana' ? profile?.walletAddress : undefined
+        buyerWalletAddress: undefined
       })
       
       setOrderId(order.id)
