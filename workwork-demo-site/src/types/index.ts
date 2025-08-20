@@ -60,6 +60,17 @@ export interface User {
   avatar: string
 }
 
+export interface SellerInfo {
+  id: string
+  username: string
+  email: string
+  bio?: string
+  avatar?: string
+  wallet_address?: string
+  social_linkedin?: string
+  social_website?: string
+}
+
 export interface DropdownMenuItem {
   id: string
   label: string

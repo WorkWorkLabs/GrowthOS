@@ -2,10 +2,11 @@
 
 import { createPortal } from 'react-dom'
 import { useState } from 'react'
-import { Project } from '@/types'
+import { Project, SellerInfo } from '@/types'
 import { TAG_COLORS, DEFAULT_PROJECT_IMAGE } from '@/lib/constants'
 import { ShoppingCart, MessageCircle, DollarSign, Eye, Heart, Star } from 'lucide-react'
 import { PurchaseConfirmModal } from './PurchaseConfirmModal'
+import { ContactSellerModal } from './ContactSellerModal'
 import { ImageCarousel } from './ImageCarousel'
 
 interface ProjectModalProps {
@@ -17,6 +18,8 @@ interface ProjectModalProps {
 
 export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModalProps) {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [sellerInfo, setSellerInfo] = useState<SellerInfo | null>(null)
   
   if (!isOpen || !mounted) return null
 
@@ -179,10 +182,25 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
 
 
   // Handle contact seller
-  function handleContact(project: Project) {
-    // TODO: Implement messaging system or redirect to seller's contact
-    alert(`Contact seller "${project.author}" for "${project.name}"\n\nThis will open a messaging interface or show contact details.`)
-    console.log('Contact seller:', project)
+  async function handleContact(project: Project) {
+    try {
+      // Mock seller info - in a real app, you'd fetch this from your API
+      const mockSellerInfo: SellerInfo = {
+        id: project.author_id || '1',
+        username: project.author,
+        email: `${project.author.toLowerCase().replace(/\s+/g, '')}@example.com`,
+        bio: `Hi! I'm ${project.author}, passionate about creating amazing digital products. Feel free to reach out for any questions about my work.`,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${project.author}`,
+        wallet_address: '0x742d35Cc6634C0532925a3b8D41B2C02D32A8efb',
+        social_linkedin: `https://linkedin.com/in/${project.author.toLowerCase().replace(/\s+/g, '')}`,
+        social_website: `https://${project.author.toLowerCase().replace(/\s+/g, '')}.dev`
+      }
+      
+      setSellerInfo(mockSellerInfo)
+      setShowContactModal(true)
+    } catch (error) {
+      console.error('Failed to load seller info:', error)
+    }
   }
 
   return (
@@ -192,6 +210,12 @@ export function ProjectModal({ project, isOpen, onClose, mounted }: ProjectModal
         project={project}
         isOpen={showPurchaseModal}
         onClose={() => setShowPurchaseModal(false)}
+        mounted={mounted}
+      />
+      <ContactSellerModal 
+        sellerInfo={sellerInfo}
+        isOpen={showContactModal}
+        onClose={() => setShowContactModal(false)}
         mounted={mounted}
       />
     </>
