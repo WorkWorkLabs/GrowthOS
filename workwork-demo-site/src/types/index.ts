@@ -1,6 +1,7 @@
 export type TagType = 'ai' | 'crypto' | 'education'
 export type PricingModel = 'one_time' | 'subscription'
 export type SubscriptionPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly'
+export type ProductZone = 'courses' | 'products' | 'services' | 'events' | 'accommodation' | 'all'
 
 export interface Tag {
   label: string
@@ -29,6 +30,7 @@ export interface Project {
   price: number
   currency: string
   category?: string
+  zone?: ProductZone // 新增专区字段
   image?: string // 保留用于向后兼容
   image_url?: string // 保留用于向后兼容
   images?: ProductImage[] // 新的多图字段

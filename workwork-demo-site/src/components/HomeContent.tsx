@@ -6,13 +6,14 @@ import { Header } from '@/components/Header'
 import { ControlBar } from '@/components/ControlBar'
 import { ProjectGrid } from '@/components/ProjectGrid'
 import { ProductsService } from '@/lib/products'
-import { Project } from '@/types'
+import { Project, ProductZone } from '@/types'
 
 export function HomeContent() {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'time' | 'price' | 'likes' | 'views'>('time')
+  const [activeZone, setActiveZone] = useState<ProductZone>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
@@ -45,6 +46,7 @@ export function HomeContent() {
         if (debouncedSearchQuery.trim()) {
           // 如果有搜索查询，使用搜索功能
           data = await ProductsService.searchProducts(debouncedSearchQuery, {
+            zone: activeZone,
             sortBy: sortField,
             sortOrder: 'desc',
             limit: 50
@@ -52,15 +54,20 @@ export function HomeContent() {
         } else {
           // 否则获取所有产品
           data = await ProductsService.getProducts({
+            zone: activeZone,
             sortBy: sortField,
             sortOrder: 'desc',
             limit: 50
           })
         }
         
-        setProducts(data)
+        // 确保data是数组，如果不是则使用空数组
+        const finalData = Array.isArray(data) ? data : []
+        setProducts(finalData)
       } catch (error) {
         console.error('Failed to load products:', error)
+        // 发生错误时设置为空数组
+        setProducts([])
       } finally {
         setLoading(false)
         setIsSearching(false)
@@ -68,10 +75,14 @@ export function HomeContent() {
     }
 
     loadProducts()
-  }, [sortBy, debouncedSearchQuery])
+  }, [sortBy, activeZone, debouncedSearchQuery])
 
   const handleFilterChange = (filter: 'time' | 'price' | 'likes' | 'views') => {
     setSortBy(filter)
+  }
+
+  const handleZoneChange = (zone: ProductZone) => {
+    setActiveZone(zone)
   }
 
   const handleSearch = (query: string) => {
@@ -101,8 +112,14 @@ export function HomeContent() {
           onSearch={handleSearch}
           activeFilter={sortBy}
           isSearching={isSearching}
+          activeZone={activeZone}
+          onZoneChange={handleZoneChange}
         />
-        <ProjectGrid projects={products} />
+        <ProjectGrid 
+          products={products || []} 
+          activeZone={activeZone}
+          sortBy={sortBy}
+        />
       </div>
     </div>
   )

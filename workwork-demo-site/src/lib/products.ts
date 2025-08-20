@@ -1,8 +1,9 @@
 import { supabase } from './supabase'
-import { Project, Tag, ProductImage } from '@/types'
+import { Project, Tag, ProductImage, ProductZone } from '@/types'
 
 export interface ProductsFilter {
   category?: string
+  zone?: ProductZone
   sortBy?: 'created_at' | 'price' | 'views' | 'likes' | 'rating'
   sortOrder?: 'asc' | 'desc'
   limit?: number
@@ -26,6 +27,10 @@ export class ProductsService {
       // 应用过滤器
       if (filter.category) {
         query = query.eq('category', filter.category)
+      }
+      
+      if (filter.zone && filter.zone !== 'all') {
+        query = query.eq('zone', filter.zone)
       }
 
       // 应用排序
@@ -188,6 +193,10 @@ export class ProductsService {
       if (filter.category) {
         dbQuery = dbQuery.eq('category', filter.category)
       }
+      
+      if (filter.zone && filter.zone !== 'all') {
+        dbQuery = dbQuery.eq('zone', filter.zone)
+      }
 
       // 应用排序
       if (filter.sortBy) {
@@ -232,6 +241,7 @@ export class ProductsService {
       price: parseFloat(dbProduct.price as string),
       currency: dbProduct.currency as string,
       category: dbProduct.category as string,
+      zone: dbProduct.zone as ProductZone,
       image: firstImage, // 向后兼容，使用第一张图片
       image_url: firstImage, // 向后兼容，使用第一张图片
       images: images, // 新的多图字段

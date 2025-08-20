@@ -13,9 +13,5 @@ function LoadingFallback() {
 }
 
 export default function Home() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <HomeContent />
-    </Suspense>
-  )
+  return <HomeContent />
 }
