@@ -159,13 +159,6 @@ Our team combines experienced digital nomads with technical expertise in:
 - **Community Building** & growth marketing
 - **Product Design** & user experience
 
-## 🗺️ Roadmap
-
-**2024 Q4**: MVP launch with core features
-**2025 Q1**: AI agent integration & crypto payments
-**2025 Q2**: Community features & marketplace expansion
-**2025 Q3**: Mobile app & advanced analytics
-**2025 Q4**: Global expansion & enterprise features
 
 ## 📈 Business Model
 
