@@ -41,30 +41,6 @@ The platform combines AI agent generation, Solana smart contract payments, decen
 
 https://github.com/WorkWorkLabs/GrowthOS/
 
-## Development Team
-
-- **Yanbo** - Product Lead
-  - GitHub: yanboishere
-  - 3+ years digital nomad experience with deep understanding of user pain points
-
-- **Morty** - Blockchain Development Engineer
-  - GitHub: China-Chris
-  - Professional smart contract development and DeFi protocol design
-
-- **BH3GEI** - Full-stack Developer & Product Lead
-  - GitHub: BH3GEI
-
-- **Steven** - AI Engineer
-  - GitHub: Stvlynn
-  - AI Agent development and multi-modal content generation expert
-
-## Awards History
-
-**First-time Hackathon Participation**
-
-The project was developed in just one week and is still in optimization status.
-However, community and actual user research validation is comprehensive. All team members are experienced digital nomads with deep understanding of the target user group.
-
 ## Technical Architecture
 
 **Frontend Tech Stack:**
@@ -83,7 +59,7 @@ However, community and actual user research validation is comprehensive. All tea
 
 ## Project Demo
 
-**Online Demo:** https://growthos-demo.vercel.app
+**Online Demo:** https://workwork.work
 
 **Core Demo Flow:**
 1. Web3 wallet connection and identity authentication (Phantom wallet)
