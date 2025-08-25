@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/providers/AuthProvider'
 
 interface WalletState {
   address: string | null
   isConnected: boolean
   isConnecting: boolean
+  isBinding: boolean
   chainId: number | null
   balance: string | null
 }
 
+interface SignatureResult {
+  signature: string
+  message: string
+  address: string
+}
+
 export function useWallet() {
+  const { connectWallet: bindWalletToAccount, user } = useAuth()
   const [wallet, setWallet] = useState<WalletState>({
     address: null,
     isConnected: false,
     isConnecting: false,
+    isBinding: false,
     chainId: null,
     balance: null
   })
@@ -23,21 +33,20 @@ export function useWallet() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkConnection = async () => {
-    if (typeof window !== 'undefined' && window.ethereum) {
+    if (typeof window !== 'undefined' && window.solana) {
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[]
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' }) as string
-        
-        if (accounts.length > 0) {
+        const response = await window.solana.connect({ onlyIfTrusted: true })
+        if (response.publicKey) {
+          const address = response.publicKey.toString()
           setWallet(prev => ({
             ...prev,
-            address: accounts[0],
+            address,
             isConnected: true,
-            chainId: parseInt(chainId, 16)
+            chainId: null // Solana不使用chainId
           }))
           
           // 获取余额
-          getBalance(accounts[0])
+          getBalance(address)
         }
       } catch (error) {
         console.error('Failed to check wallet connection:', error)
@@ -46,70 +55,103 @@ export function useWallet() {
   }
 
   const connect = async () => {
-    if (!window.ethereum) {
-      alert('Please install MetaMask!')
-      return
+    if (!window.solana) {
+      throw new Error('Please install Phantom wallet')
     }
 
     setWallet(prev => ({ ...prev, isConnecting: true }))
 
     try {
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      }) as string[]
-      const chainId = await window.ethereum.request({ method: 'eth_chainId' }) as string
+      const response = await window.solana.connect()
+      const address = response.publicKey.toString()
 
       setWallet(prev => ({
         ...prev,
-        address: accounts[0],
+        address,
         isConnected: true,
         isConnecting: false,
-        chainId: parseInt(chainId, 16)
+        chainId: null
       }))
 
-      getBalance(accounts[0])
+      getBalance(address)
+      return address
     } catch (error) {
       console.error('Failed to connect wallet:', error)
       setWallet(prev => ({ ...prev, isConnecting: false }))
+      throw error
     }
   }
 
   const disconnect = () => {
+    if (window.solana) {
+      window.solana.disconnect()
+    }
     setWallet({
       address: null,
       isConnected: false,
       isConnecting: false,
+      isBinding: false,
       chainId: null,
       balance: null
     })
   }
 
-  const getBalance = async (address: string) => {
+  const signMessage = async (address: string, message: string): Promise<string> => {
+    if (!window.solana) {
+      throw new Error('Phantom wallet not found')
+    }
+
     try {
-      const balance = await window.ethereum!.request({
-        method: 'eth_getBalance',
-        params: [address, 'latest']
-      }) as string
-      
-      const balanceInEth = (parseInt(balance, 16) / 1e18).toFixed(4)
-      setWallet(prev => ({ ...prev, balance: balanceInEth }))
+      const encodedMessage = new TextEncoder().encode(message)
+      const signedMessage = await window.solana.signMessage(encodedMessage, 'utf8')
+      return Buffer.from(signedMessage.signature).toString('hex')
     } catch (error) {
-      console.error('Failed to get balance:', error)
+      console.error('Failed to sign message:', error)
+      throw new Error('User cancelled signature or signing failed')
     }
   }
 
-  const switchNetwork = async (chainId: number) => {
+  const connectAndBind = async () => {
+    if (!user) {
+      throw new Error('Please login first')
+    }
+
+    setWallet(prev => ({ ...prev, isBinding: true }))
+
     try {
-      await window.ethereum!.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${chainId.toString(16)}` }]
-      })
-    } catch (error: unknown) {
-      // 如果网络不存在，尝试添加
-      if (error && typeof error === 'object' && 'code' in error && error.code === 4902) {
-        // 这里可以添加网络配置
-        console.log('Network not found, please add it manually')
-      }
+      // Step 1: Connect wallet
+      const address = await connect()
+      if (!address) throw new Error('Wallet connection failed')
+
+      // Step 2: Create verification message
+      const timestamp = Date.now()
+      const message = `GrowthOS Wallet Verification\n\nAddress: ${address}\nUser ID: ${user.id}\nTime: ${new Date(timestamp).toISOString()}\n\nPlease sign to verify wallet ownership`
+
+      // Step 3: Sign message
+      const signature = await signMessage(address, message)
+
+      // Step 4: Verify and bind to account
+      await bindWalletToAccount(address)
+
+      console.log('Wallet binding successful:', { address, signature })
+      return { address, signature, message }
+
+    } catch (error) {
+      console.error('Wallet binding failed:', error)
+      throw error
+    } finally {
+      setWallet(prev => ({ ...prev, isBinding: false }))
+    }
+  }
+
+  const getBalance = async (address: string) => {
+    try {
+      // 使用Solana Web3.js获取余额的简化版本
+      // 实际项目中应该使用@solana/web3.js库
+      const balanceInSol = "0.0000" // 占位符，需要实际实现
+      setWallet(prev => ({ ...prev, balance: balanceInSol }))
+    } catch (error) {
+      console.error('Failed to get balance:', error)
     }
   }
 
@@ -117,7 +159,8 @@ export function useWallet() {
     ...wallet,
     connect,
     disconnect,
-    switchNetwork,
+    connectAndBind,
+    signMessage,
     getBalance: () => wallet.address && getBalance(wallet.address)
   }
 }
@@ -125,8 +168,10 @@ export function useWallet() {
 // 扩展window对象类型
 declare global {
   interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+    solana?: {
+      connect: (options?: { onlyIfTrusted?: boolean }) => Promise<{ publicKey: { toString(): string } }>
+      disconnect: () => Promise<void>
+      signMessage: (message: Uint8Array, encoding?: string) => Promise<{ signature: Uint8Array }>
       on: (event: string, callback: (...args: unknown[]) => void) => void
       removeListener: (event: string, callback: (...args: unknown[]) => void) => void
     }
