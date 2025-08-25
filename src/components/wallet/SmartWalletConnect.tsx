@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -64,6 +64,13 @@ export function SmartWalletConnect({
     setError("");
     setSuccess("");
   };
+
+  // 当钱包连接状态改变时清除错误
+  useEffect(() => {
+    if (isConnected && address) {
+      setError("");
+    }
+  }, [isConnected, address]);
 
   const getButtonText = () => {
     if (isBinding) return "Binding wallet...";

@@ -49,7 +49,12 @@ export function useWallet() {
           getBalance(address)
         }
       } catch (error) {
-        console.error('Failed to check wallet connection:', error)
+        // 忽略用户拒绝连接的错误，这是正常行为
+        if (error instanceof Error && error.message.includes('User rejected')) {
+          console.log('User has not previously connected wallet')
+        } else {
+          console.error('Failed to check wallet connection:', error)
+        }
       }
     }
   }

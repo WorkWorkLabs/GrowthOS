@@ -5,6 +5,7 @@ import { UserProfile } from '@/types/web3'
 import { useAuth } from '@/providers/AuthProvider'
 import { MessageCircle, CreditCard, Linkedin, Globe, CheckCircle, Lock, AlertCircle, Shield, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { SmartWalletConnect } from '@/components/wallet/SmartWalletConnect'
 
 interface ProfileFormProps {
   profile: UserProfile
@@ -33,8 +34,6 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
   })
   
   const [loading, setLoading] = useState(false)
-  const [walletAddress, setWalletAddress] = useState('')
-  const [connectingWallet, setConnectingWallet] = useState(false)
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
   const [validating, setValidating] = useState<{[key: string]: boolean}>({})
   const [showCreditCard, setShowCreditCard] = useState(false)
@@ -77,13 +76,6 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
     } finally {
       setLoading(false)
     }
-  }
-
-  // 验证Solana地址格式
-  const isValidSolanaAddress = (address: string): boolean => {
-    // Solana地址是Base58编码的44个字符
-    const solanaAddressRegex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
-    return solanaAddressRegex.test(address.trim())
   }
 
   // 验证信用卡号格式并检测卡类型
@@ -132,34 +124,6 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
     const expiryMonth = parseInt(month)
     
     return expiryYear > currentYear || (expiryYear === currentYear && expiryMonth >= currentMonth)
-  }
-
-  const handleConnectWallet = async () => {
-    if (!walletAddress.trim()) {
-      alert('Please enter a Solana wallet address')
-      return
-    }
-
-    if (!isValidSolanaAddress(walletAddress)) {
-      alert('Please enter a valid Solana address. Solana addresses are 32-44 characters long and use Base58 encoding.')
-      return
-    }
-
-    setConnectingWallet(true)
-    try {
-      await connectWallet(walletAddress.trim())
-      setWalletAddress('')
-      alert('Solana wallet connected successfully!')
-    } catch (error) {
-      console.error('Failed to connect wallet:', error)
-      if (error instanceof Error && error.message.includes('duplicate')) {
-        alert('This Solana address is already connected to another account.')
-      } else {
-        alert('Failed to connect wallet. Please try again.')
-      }
-    } finally {
-      setConnectingWallet(false)
-    }
   }
 
   // 验证社交账号唯一性
@@ -399,23 +363,18 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">Connect your Solana wallet (optional)</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={walletAddress}
-                    onChange={(e) => setWalletAddress(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="Solana address (e.g., 5Qp...XYZ)"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleConnectWallet}
-                    disabled={connectingWallet}
-                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-                  >
-                    {connectingWallet ? 'Connecting...' : 'Connect'}
-                  </button>
-                </div>
+                <SmartWalletConnect
+                  onSuccess={(address) => {
+                    alert('Solana wallet connected successfully!')
+                    // 刷新profile数据
+                    onSave()
+                  }}
+                  onError={(error) => {
+                    console.error('Failed to connect wallet:', error)
+                    alert('Failed to connect wallet: ' + error)
+                  }}
+                  className="w-full"
+                />
               </div>
             )}
           </div>
