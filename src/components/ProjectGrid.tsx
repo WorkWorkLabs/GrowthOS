@@ -45,31 +45,31 @@ export function ProjectGrid({ products, activeZone = 'all', sortBy = 'time', ini
   // 如果正在加载
   if (externalLoading || internalLoading) {
     return (
-      <div className="px-6 py-8">
+      <div className="px-4 py-8">
         {/* 骨架屏加载动画 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center max-w-7xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-6 max-w-[1600px] mx-auto">
           {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="w-full max-w-sm">
-              <div className="bg-gray-800/50 rounded-xl p-6 animate-pulse">
+            <div key={index} className="flex-shrink-0">
+              <div className="w-[280px] h-[360px] bg-gray-800/50 rounded-lg animate-pulse p-4">
                 {/* 图片占位 */}
-                <div className="w-full h-48 bg-gray-700/70 rounded-lg mb-4 animate-pulse"></div>
+                <div className="w-full h-[180px] bg-gray-700/70 rounded-lg mb-4"></div>
                 
                 {/* 标题占位 */}
-                <div className="space-y-3">
-                  <div className="h-6 bg-gray-700/70 rounded w-3/4 animate-pulse"></div>
-                  <div className="h-4 bg-gray-700/50 rounded w-1/2 animate-pulse"></div>
+                <div className="space-y-2 mb-4">
+                  <div className="h-4 bg-gray-700/70 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-700/50 rounded w-1/2"></div>
                 </div>
                 
                 {/* 标签占位 */}
-                <div className="flex gap-2 mt-4">
-                  <div className="h-6 bg-gray-700/50 rounded-full w-16 animate-pulse"></div>
-                  <div className="h-6 bg-gray-700/50 rounded-full w-12 animate-pulse"></div>
+                <div className="flex gap-2 mb-4">
+                  <div className="h-5 bg-gray-700/50 rounded-full w-12"></div>
+                  <div className="h-5 bg-gray-700/50 rounded-full w-16"></div>
                 </div>
                 
                 {/* 底部信息占位 */}
-                <div className="flex justify-between items-center mt-6">
-                  <div className="h-4 bg-gray-700/50 rounded w-20 animate-pulse"></div>
-                  <div className="h-4 bg-gray-700/50 rounded w-16 animate-pulse"></div>
+                <div className="flex justify-between items-center">
+                  <div className="h-3 bg-gray-700/50 rounded w-16"></div>
+                  <div className="h-3 bg-gray-700/50 rounded w-12"></div>
                 </div>
               </div>
             </div>
@@ -99,12 +99,12 @@ export function ProjectGrid({ products, activeZone = 'all', sortBy = 'time', ini
   }
 
   return (
-    <div className="px-6 py-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center max-w-7xl mx-auto">
+    <div className="px-4 py-8 animate-in fade-in duration-500">
+      <div className="flex flex-wrap justify-center gap-6 max-w-[1600px] mx-auto">
         {finalProducts.map((project, index) => (
           <div 
             key={project.id}
-            className="animate-in fade-in slide-in-from-bottom-4 duration-300"
+            className="flex-shrink-0 animate-in fade-in slide-in-from-bottom-4 duration-300"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <ProjectCard 
