@@ -181,15 +181,33 @@ export function useAuthProvider() {
   const connectWallet = async (walletAddress: string) => {
     if (!supabase || !user) return
     
-    const { error } = await supabase
-      .from('users')
-      .update({ wallet_address: walletAddress })
-      .eq('id', user.id)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ wallet_address: walletAddress })
+        .eq('id', user.id)
 
-    if (error) throw error
+      if (error) {
+        console.error('Connect wallet error:', error)
+        
+        // 处理具体的错误类型
+        if (error.code === 'PGRST116') {
+          throw new Error('User profile not found. Please try again.')
+        } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
+          throw new Error('This wallet address is already connected to another account.')
+        } else if (error.code === '23503') {
+          throw new Error('Database constraint violation. Please try again.')
+        } else {
+          throw new Error(`Failed to connect wallet: ${error.message}`)
+        }
+      }
 
-    // Reload profile
-    await loadUserProfile(user.id)
+      // Reload profile after successful update
+      await loadUserProfile(user.id)
+    } catch (error) {
+      console.error('ConnectWallet function error:', error)
+      throw error
+    }
   }
 
   const updateProfile = async (updates: Partial<UserProfile>) => {

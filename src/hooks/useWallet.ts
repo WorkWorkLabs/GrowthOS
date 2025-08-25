@@ -121,6 +121,11 @@ export function useWallet() {
       throw new Error('Please login first')
     }
 
+    // 防止重复调用
+    if (wallet.isBinding || wallet.isConnecting) {
+      throw new Error('Connection already in progress')
+    }
+
     setWallet(prev => ({ ...prev, isBinding: true }))
 
     try {
@@ -135,7 +140,8 @@ export function useWallet() {
       // Step 3: Sign message
       const signature = await signMessage(address, message)
 
-      // Step 4: Verify and bind to account
+      // Step 4: Verify and bind to account (with retry for new users)
+      await new Promise(resolve => setTimeout(resolve, 1000)) // 等待1秒让数据库触发器完成
       await bindWalletToAccount(address)
 
       console.log('Wallet binding successful:', { address, signature })
