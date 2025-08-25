@@ -12,11 +12,15 @@ export function HomeContent() {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const [sortBy, setSortBy] = useState<'time' | 'price' | 'likes' | 'views'>('time')
   const [activeZone, setActiveZone] = useState<ProductZone>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  
+  // 数据缓存
+  const [dataCache, setDataCache] = useState<Map<string, Project[]>>(new Map())
   
   // 获取URL参数中的产品ID
   const initialOpenProductId = searchParams.get('product')
@@ -36,12 +40,28 @@ export function HomeContent() {
 
   useEffect(() => {
     const loadProducts = async () => {
-      setLoading(true)
+      const sortField = sortBy === 'time' ? 'created_at' : 
+                       sortBy === 'price' ? 'price' :
+                       sortBy === 'likes' ? 'likes' : 'views'
+      
+      // 生成缓存键
+      const cacheKey = `${activeZone}-${sortField}-${debouncedSearchQuery}`
+      
+      // 检查缓存
+      if (dataCache.has(cacheKey)) {
+        const cachedData = dataCache.get(cacheKey)!
+        setProducts(cachedData)
+        setLoading(false)
+        setIsSearching(false)
+        return
+      }
+      
+      // 如果不是初始加载，使用过渡动画
+      if (!loading) {
+        setIsTransitioning(true)
+      }
+      
       try {
-        const sortField = sortBy === 'time' ? 'created_at' : 
-                         sortBy === 'price' ? 'price' :
-                         sortBy === 'likes' ? 'likes' : 'views'
-        
         let data: Project[]
         if (debouncedSearchQuery.trim()) {
           // 如果有搜索查询，使用搜索功能
@@ -63,6 +83,15 @@ export function HomeContent() {
         
         // 确保data是数组，如果不是则使用空数组
         const finalData = Array.isArray(data) ? data : []
+        
+        // 缓存数据
+        setDataCache(prev => new Map(prev.set(cacheKey, finalData)))
+        
+        // 如果是过渡状态，添加小延迟让动画更平滑
+        if (isTransitioning) {
+          await new Promise(resolve => setTimeout(resolve, 200))
+        }
+        
         setProducts(finalData)
       } catch (error) {
         console.error('Failed to load products:', error)
@@ -71,11 +100,12 @@ export function HomeContent() {
       } finally {
         setLoading(false)
         setIsSearching(false)
+        setIsTransitioning(false)
       }
     }
 
     loadProducts()
-  }, [sortBy, activeZone, debouncedSearchQuery])
+  }, [sortBy, activeZone, debouncedSearchQuery]) // 只依赖真正的触发条件
 
   const handleFilterChange = (filter: 'time' | 'price' | 'likes' | 'views') => {
     setSortBy(filter)
@@ -119,6 +149,7 @@ export function HomeContent() {
           products={products || []} 
           activeZone={activeZone}
           sortBy={sortBy}
+          loading={isTransitioning}
         />
       </div>
     </div>
