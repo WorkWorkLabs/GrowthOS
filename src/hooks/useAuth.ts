@@ -153,38 +153,9 @@ export function useAuthProvider() {
           setTimeout(() => loadUserProfile(userId), 1000)
           return
         } else if (error.code === '42501') {
-          console.log('RLS policy violation - user cannot create their own record')
-          // RLS策略阻止，但我们可以设置默认profile
-          setProfile({
-            id: userId,
-            email: authUser.email!,
-            username: username,
-            bio: authUser.user_metadata?.bio || 'Hello! I\'m new to WorkWork.',
-            avatar: authUser.user_metadata?.avatar || 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
-            walletAddress: undefined,
-            social: {
-              wechat: undefined,
-              alipay: undefined,
-              linkedin: undefined,
-              website: undefined,
-              twitter: '',
-              github: '',
-            },
-            stats: {
-              totalSales: 0,
-              totalProducts: 0,
-              rating: 0,
-              joinedAt: new Date().toISOString().split('T')[0]
-            },
-            verification: {
-              isVerified: false,
-              kycCompleted: false,
-              badgeLevel: 'bronze',
-              emailVerified: true
-            }
-          })
-          console.log('Set default profile due to RLS restriction')
-          return
+          console.error('RLS policy violation - user cannot create their own record')
+          console.error('需要在Supabase中修复RLS策略以允许用户创建自己的记录')
+          throw new Error('Database permission error: Cannot create user profile. Please contact support.')
         }
         throw error
       }
