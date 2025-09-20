@@ -125,16 +125,20 @@ export function useAuthProvider() {
         userMetadata: authUser.user_metadata
       })
       
+      // 使用upsert代替insert，避免重复插入错误
       const { data, error } = await supabase
         .from('users')
-        .insert([{
+        .upsert([{
           id: userId,
           email: authUser.email!,
           username: username,
           bio: authUser.user_metadata?.bio || 'Hello! I\'m new to WorkWork.',
           avatar: authUser.user_metadata?.avatar || 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
           email_verified: true
-        }])
+        }], {
+          onConflict: 'id',
+          ignoreDuplicates: false
+        })
         .select()
         .single()
 
@@ -142,10 +146,44 @@ export function useAuthProvider() {
 
       if (error) {
         console.error('Failed to create user profile:', error)
-        // 如果用户已存在（竞态条件），重新加载
+        
+        // 处理不同类型的错误
         if (error.code === '23505') {
           console.log('User already exists, reloading...')
           setTimeout(() => loadUserProfile(userId), 1000)
+          return
+        } else if (error.code === '42501') {
+          console.log('RLS policy violation - user cannot create their own record')
+          // RLS策略阻止，但我们可以设置默认profile
+          setProfile({
+            id: userId,
+            email: authUser.email!,
+            username: username,
+            bio: authUser.user_metadata?.bio || 'Hello! I\'m new to WorkWork.',
+            avatar: authUser.user_metadata?.avatar || 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+            walletAddress: undefined,
+            social: {
+              wechat: undefined,
+              alipay: undefined,
+              linkedin: undefined,
+              website: undefined,
+              twitter: '',
+              github: '',
+            },
+            stats: {
+              totalSales: 0,
+              totalProducts: 0,
+              rating: 0,
+              joinedAt: new Date().toISOString().split('T')[0]
+            },
+            verification: {
+              isVerified: false,
+              kycCompleted: false,
+              badgeLevel: 'bronze',
+              emailVerified: true
+            }
+          })
+          console.log('Set default profile due to RLS restriction')
           return
         }
         throw error
