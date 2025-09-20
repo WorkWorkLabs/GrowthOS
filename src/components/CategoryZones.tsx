@@ -152,20 +152,23 @@ export function CategoryZones({ activeZone = 'all', onZoneChange }: CategoryZone
             
             {/* 下拉菜单 */}
             {isDropdownOpen && (
-              <div className="absolute top-full right-0 mt-1 bg-white rounded-md shadow-lg border z-50 min-w-[180px]">
+              <div className="absolute top-full right-0 mt-1 bg-white rounded-md shadow-lg border z-[100] min-w-[200px] max-w-[250px]">
                 {hiddenZones.map(({ key, label, icon: Icon, description }) => (
                   <button
                     key={key}
                     onClick={() => handleZoneClick(key)}
                     className={`
-                      w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors text-sm
+                      w-full px-3 py-3 text-left flex items-start gap-2 hover:bg-gray-50 transition-colors text-sm
                       ${activeZone === key ? 'bg-gray-100' : ''}
                       ${key === hiddenZones[0].key ? 'rounded-t-md' : ''}
                       ${key === hiddenZones[hiddenZones.length - 1].key ? 'rounded-b-md' : ''}
                     `}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-medium">{label}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-sm block truncate">{label}</span>
+                      <span className="text-xs text-gray-500 block truncate">{description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -176,7 +179,7 @@ export function CategoryZones({ activeZone = 'all', onZoneChange }: CategoryZone
         {/* 点击外部关闭桌面端下拉菜单 */}
         {isDropdownOpen && (
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-[90]" 
             onClick={() => setIsDropdownOpen(false)}
           />
         )}
@@ -199,20 +202,20 @@ export function CategoryZones({ activeZone = 'all', onZoneChange }: CategoryZone
 
         {/* 下拉选项 */}
         {isDropdownOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md shadow-lg border z-50">
+          <div className="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg border z-[100] w-[280px]">
             {ZONE_CONFIG.map(({ key, label, icon: Icon, description }) => (
               <button
                 key={key}
                 onClick={() => handleZoneClick(key)}
                 className={`
-                  w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors
+                  w-full px-4 py-3 text-left flex items-start gap-3 hover:bg-gray-50 transition-colors
                   ${activeZone === key ? 'bg-gray-100' : ''}
                   ${key === ZONE_CONFIG[0].key ? 'rounded-t-md' : ''}
                   ${key === ZONE_CONFIG[ZONE_CONFIG.length - 1].key ? 'rounded-b-md' : ''}
                 `}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                <div>
+                <div className="flex-1">
                   <div className="text-sm font-medium text-text-primary">{label}</div>
                   <div className="text-xs text-text-secondary">{description}</div>
                 </div>
@@ -224,7 +227,7 @@ export function CategoryZones({ activeZone = 'all', onZoneChange }: CategoryZone
         {/* 点击外部关闭下拉菜单 */}
         {isDropdownOpen && (
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-[90]" 
             onClick={() => setIsDropdownOpen(false)}
           />
         )}

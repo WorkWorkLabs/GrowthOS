@@ -40,11 +40,15 @@ export function Header() {
                 className="flex items-center space-x-2 bg-white hover:bg-gray-50 rounded-full px-3 py-2 transition-colors shadow-sm"
               >
                 <Image
-                  src={profile.avatar}
+                  src={profile.avatar || '/growthos-logo.png'}
                   alt={profile.username}
                   width={32}
                   height={32}
-                  className="w-8 h-8 rounded-full"
+                  className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.src = '/growthos-logo.png'
+                  }}
                 />
                 <span className="text-gray-900 font-medium hidden sm:block">
                   {profile.username}

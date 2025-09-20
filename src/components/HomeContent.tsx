@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { ControlBar } from '@/components/ControlBar'
 import { ProjectGrid } from '@/components/ProjectGrid'
+import { BananaPosterGenerator } from '@/components/BananaPosterGenerator'
 import { ProductsService } from '@/lib/products'
 import { Project, ProductZone } from '@/types'
 
@@ -18,6 +19,7 @@ export function HomeContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [showBananaGenerator, setShowBananaGenerator] = useState(false)
   
   // 数据缓存
   const [dataCache, setDataCache] = useState<Map<string, Project[]>>(new Map())
@@ -124,6 +126,10 @@ export function HomeContent() {
     window.location.href = '/create'
   }
 
+  const handleBananaGenerate = () => {
+    setShowBananaGenerator(true)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-blue flex items-center justify-center">
@@ -144,6 +150,7 @@ export function HomeContent() {
           isSearching={isSearching}
           activeZone={activeZone}
           onZoneChange={handleZoneChange}
+          onBananaGenerate={handleBananaGenerate}
         />
         <ProjectGrid 
           products={products || []} 
@@ -152,6 +159,11 @@ export function HomeContent() {
           loading={isTransitioning}
         />
       </div>
+      
+      <BananaPosterGenerator 
+        isOpen={showBananaGenerator}
+        onClose={() => setShowBananaGenerator(false)}
+      />
     </div>
   )
 }

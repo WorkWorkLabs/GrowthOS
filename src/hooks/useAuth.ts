@@ -76,7 +76,7 @@ export function useAuthProvider() {
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       console.log('Profile query result:', { data, error })
 

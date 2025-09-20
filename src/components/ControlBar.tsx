@@ -15,9 +15,10 @@ interface ControlBarProps {
   // 新增专区相关props
   activeZone?: ProductZone
   onZoneChange?: (zone: ProductZone) => void
+  onBananaGenerate?: () => void
 }
 
-export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFilter = 'time', isSearching = false, activeZone = 'all', onZoneChange }: ControlBarProps) {
+export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFilter = 'time', isSearching = false, activeZone = 'all', onZoneChange, onBananaGenerate }: ControlBarProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
 
@@ -37,14 +38,22 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
   }
 
   return (
-    <div className="pl-20 pr-20 py-3 flex items-center justify-between">
+    <div className="px-4 md:pl-20 md:pr-20 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
       {/* 左侧控件组 */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full md:w-auto">
         <button 
           onClick={onCreateProject}
-          className="bg-primary text-text-inverse px-4 py-2 rounded-md text-md font-medium shadow-button hover:bg-blue-500 transition-colors"
+          className="bg-primary text-text-inverse px-3 md:px-4 py-2 rounded-md text-sm md:text-md font-medium shadow-button hover:bg-blue-500 transition-colors whitespace-nowrap"
         >
-          Create Project
+          <span className="hidden sm:inline">Create Project</span>
+          <span className="sm:hidden">Create</span>
+        </button>
+
+        <button 
+          onClick={onBananaGenerate}
+          className="bg-yellow-400 text-black px-3 md:px-4 py-2 rounded-md text-sm md:text-md font-medium shadow-button hover:bg-yellow-500 transition-colors whitespace-nowrap"
+        >
+          🍌 <span className="hidden sm:inline">Generate Poster</span>
         </button>
 
         {/* Search Box */}
@@ -64,7 +73,7 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
             placeholder="Search products, creators, or tags..."
-            className="w-64 pl-10 pr-10 py-2 text-sm border-0 rounded-lg focus:outline-none focus:ring-0 bg-transparent text-text-primary placeholder-gray-400"
+            className="w-48 md:w-64 pl-10 pr-10 py-2 text-sm border-0 rounded-lg focus:outline-none focus:ring-0 bg-transparent text-text-primary placeholder-gray-400"
           />
           {searchQuery && (
             <button
@@ -77,13 +86,13 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
         </div>
 
         {/* Filter Options */}
-        <div className="bg-white rounded-md p-1 shadow-button flex">
+        <div className="bg-white rounded-md p-1 shadow-button flex overflow-x-auto">
           {FILTER_OPTIONS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => handleFilterClick(key)}
               className={`
-                px-3 py-1 text-sm font-medium rounded transition-colors
+                px-2 md:px-3 py-1 text-xs md:text-sm font-medium rounded transition-colors whitespace-nowrap
                 ${activeFilter === key 
                   ? 'bg-gray-200 text-text-primary' 
                   : 'text-text-primary hover:bg-gray-100'

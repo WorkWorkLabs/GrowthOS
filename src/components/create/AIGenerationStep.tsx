@@ -1,50 +1,57 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { ProductData, AIGeneratedContent } from './ProductUploadFlow'
-import { generateProductInfoFromReadme } from '@/lib/gemini'
-import { Bot, Loader2, CheckCircle, RotateCcw } from 'lucide-react'
+import { useState } from "react";
+import { ProductData, AIGeneratedContent } from "./ProductUploadFlow";
+import { generateProductInfoFromReadme } from "@/lib/gemini";
+import { Bot, Loader2, CheckCircle, RotateCcw } from "lucide-react";
 
 interface AIGenerationStepProps {
-  data: ProductData
-  onUpdate: (updates: Partial<ProductData>) => void
-  onNext: () => void
-  onPrev: () => void
+  data: ProductData;
+  onUpdate: (updates: Partial<ProductData>) => void;
+  onNext: () => void;
+  onPrev: () => void;
 }
 
-export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGenerationStepProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [generationStep, setGenerationStep] = useState('')
-  const [error, setError] = useState<string | null>(null)
+export function AIGenerationStep({
+  data,
+  onUpdate,
+  onNext,
+  onPrev,
+}: AIGenerationStepProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const generateContent = async () => {
-    setIsGenerating(true)
-    setError(null) // 清除之前的错误
-    onUpdate({ isGenerating: true })
+    setIsGenerating(true);
+    setError(null); // 清除之前的错误
+    onUpdate({ isGenerating: true });
 
     try {
       // 检查是否是README文件上传
-      const isReadmeUpload = data.uploadType === 'readme' && data.readmeContent
+      const isReadmeUpload = data.uploadType === "readme" && data.readmeContent;
 
       if (isReadmeUpload && data.readmeContent) {
         // 使用真正的AI生成 (README文件)
         const steps = [
-          'Analyzing README content...',
-          'Generating product title with AI...',
-          'Creating compelling description...',
-          'Writing marketing copy...',
-          'Extracting relevant keywords...',
-          'Finalizing AI-generated content...'
-        ]
+          "Analyzing README content...",
+          "Generating product title with AI...",
+          "Creating compelling description...",
+          "Writing marketing copy...",
+          "Extracting relevant keywords...",
+          "Finalizing AI-generated content...",
+        ];
 
         for (let i = 0; i < steps.length; i++) {
-          setGenerationStep(steps[i])
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          setGenerationStep(steps[i]);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         // 调用Gemini AI生成内容
-        const aiResult = await generateProductInfoFromReadme(data.readmeContent)
-        
+        const aiResult = await generateProductInfoFromReadme(
+          data.readmeContent,
+        );
+
         const aiContent: AIGeneratedContent = {
           title: aiResult.title,
           description: aiResult.description,
@@ -55,54 +62,59 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           currency: aiResult.currency,
           category: aiResult.category,
           image_url: aiResult.image_url,
-          images: aiResult.images
-        }
+          images: aiResult.images,
+        };
 
-        setGenerationStep('AI content generation complete!')
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        onUpdate({ aiContent, isGenerating: false })
-        setIsGenerating(false)
-        setGenerationStep('')
+        setGenerationStep("AI content generation complete!");
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
+        onUpdate({ aiContent, isGenerating: false });
+        setIsGenerating(false);
+        setGenerationStep("");
       } else {
         // 其他类型仍使用测试内容
         const steps = [
-          'Analyzing your project...',
-          'Extracting key features...',
-          'Generating product title...',
-          'Creating description...',
-          'Writing marketing copy...',
-          'Generating social media posts...',
-          'Finalizing content...'
-        ]
+          "Analyzing your project...",
+          "Extracting key features...",
+          "Generating product title...",
+          "Creating description...",
+          "Writing marketing copy...",
+          "Generating social media posts...",
+          "Finalizing content...",
+        ];
 
         for (let i = 0; i < steps.length; i++) {
-          setGenerationStep(steps[i])
-          await new Promise(resolve => setTimeout(resolve, 800))
+          setGenerationStep(steps[i]);
+          await new Promise((resolve) => setTimeout(resolve, 800));
         }
 
         // 生成测试内容
         const getSourceName = () => {
-          if (data.uploadType === 'github' && data.githubUrl) {
-            return data.githubUrl.split('/').pop() || 'GitHub Repository'
+          if (data.uploadType === "github" && data.githubUrl) {
+            return data.githubUrl.split("/").pop() || "GitHub Repository";
           }
-          if (data.uploadType === 'video' && data.videoUrl) {
-            return 'Video Tutorial'
+          if (data.uploadType === "video" && data.videoUrl) {
+            return "Video Tutorial";
           }
-          if (data.uploadType === 'zip') {
-            return 'Project Package'
+          if (data.uploadType === "zip") {
+            return "Project Package";
           }
-          return 'Test Project'
-        }
+          return "Test Project";
+        };
 
-        const sourceName = getSourceName()
-        
+        const sourceName = getSourceName();
+
         const aiContent: AIGeneratedContent = {
           title: `[TEST] ${sourceName} - Professional Guide`,
           description: `[TEST] This is a comprehensive guide for ${sourceName}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. This content is generated for testing purposes and demonstrates the AI content generation workflow.`,
           marketingCopy: `[TEST] Discover the power of ${sourceName}! This comprehensive guide will transform your understanding and boost your skills. Perfect for developers, entrepreneurs, and learners who want to stay ahead of the curve.`,
-          keywords: ['test', 'demo', 'development', 'tutorial', data.uploadType || 'general'],
+          keywords: [
+            "test",
+            "demo",
+            "development",
+            "tutorial",
+            data.uploadType || "general",
+          ],
           socialPosts: {
             twitter: `🔥 BREAKTHROUGH! Just launched "${sourceName} - Professional Guide" on WorkWork! This game-changer will revolutionize how you learn development! 🚀 Mind-blown by the results! 🤯 #WorkWork #GameChanger #MustHave #TechRevolution`,
             linkedin: `🎆 绝了！发现宝藏资源！${sourceName} - 专业指南强势登陆WorkWork！
@@ -114,66 +126,76 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
 
 姐妹们冲！错过后悔系列！🏃‍♀️💨
 
-#编程宝藏 #技能up #WorkWork #强推 #开发神器`
+#编程宝藏 #技能up #WorkWork #强推 #开发神器`,
           },
           price: 29.99,
-          currency: 'SOL',
-          category: data.uploadType === 'github' ? 'development' : data.uploadType === 'video' ? 'education' : 'course',
-          image_url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+          currency: "SOL",
+          category:
+            data.uploadType === "github"
+              ? "development"
+              : data.uploadType === "video"
+                ? "education"
+                : "course",
+          image_url:
+            "https://avatars.githubusercontent.com/u/190834534?s=200&v=4",
           images: [
             {
-              url: 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
-              alt: `[TEST] ${sourceName} - Product Image`
-            }
+              url: "https://avatars.githubusercontent.com/u/190834534?s=200&v=4",
+              alt: `[TEST] ${sourceName} - Product Image`,
+            },
           ],
           // 默认为一次性购买，用户可以在预览步骤中修改为订阅
-          pricing_model: 'one_time',
+          pricing_model: "one_time",
           subscription_period: undefined,
           subscription_prices: {
             daily: 0.99,
             weekly: 4.99,
             monthly: 19.99,
-            yearly: 199.99
+            yearly: 199.99,
           },
-          subscription_duration: 1
-        }
-        
-        setGenerationStep('Content generation complete!')
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        onUpdate({ aiContent, isGenerating: false })
-        setIsGenerating(false)
-        setGenerationStep('')
-      }
-      
-    } catch (error) {
-      console.error('AI generation failed:', error)
-      setIsGenerating(false)
-      onUpdate({ isGenerating: false })
-      
-      let errorMessage = 'Unknown error'
-      if (error instanceof Error) {
-        if (error.message.includes('429')) {
-          errorMessage = 'API调用频率限制，请稍等几分钟后重试'
-        } else if (error.message.includes('API key')) {
-          errorMessage = 'API配置错误，请联系管理员'
-        } else {
-          errorMessage = error.message
-        }
-      }
-      
-      setGenerationStep(`生成失败: ${errorMessage}`)
-      setError(errorMessage)
-    }
-  }
+          subscription_duration: 1,
+        };
 
-  const hasContent = data.aiContent !== null
+        setGenerationStep("Content generation complete!");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        onUpdate({ aiContent, isGenerating: false });
+        setIsGenerating(false);
+        setGenerationStep("");
+      }
+    } catch (error) {
+      console.error("AI generation failed:", error);
+      setIsGenerating(false);
+      onUpdate({ isGenerating: false });
+
+      let errorMessage = "Unknown error";
+      if (error instanceof Error) {
+        if (error.message.includes("429")) {
+          errorMessage =
+            "API LIMITED: Too many requests. Please try again later.";
+        } else if (error.message.includes("API key")) {
+          errorMessage = "API ERROR: Invalid API key.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setGenerationStep(`生成失败: ${errorMessage}`);
+      setError(errorMessage);
+    }
+  };
+
+  const hasContent = data.aiContent !== null;
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Content Generation</h2>
-        <p className="text-gray-600">Let AI analyze your project and generate professional content</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          AI Content Generation
+        </h2>
+        <p className="text-gray-600">
+          Let AI analyze your project and generate professional content
+        </p>
       </div>
 
       {/* Source Information */}
@@ -184,17 +206,19 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
             <span className="text-gray-600 w-20">Type:</span>
             <span className="font-medium capitalize">{data.uploadType}</span>
           </div>
-          {data.uploadType === 'readme' || data.uploadType === 'zip' ? (
+          {data.uploadType === "readme" || data.uploadType === "zip" ? (
             <div className="flex items-center">
               <span className="text-gray-600 w-20">Files:</span>
-              <span className="font-medium">{data.files.map(f => f.name).join(', ')}</span>
+              <span className="font-medium">
+                {data.files.map((f) => f.name).join(", ")}
+              </span>
             </div>
-          ) : data.uploadType === 'github' ? (
+          ) : data.uploadType === "github" ? (
             <div className="flex items-center">
               <span className="text-gray-600 w-20">GitHub:</span>
               <span className="font-medium">{data.githubUrl}</span>
             </div>
-          ) : data.uploadType === 'video' ? (
+          ) : data.uploadType === "video" ? (
             <div className="flex items-center">
               <span className="text-gray-600 w-20">Video:</span>
               <span className="font-medium">{data.videoUrl}</span>
@@ -209,9 +233,12 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           <div className="mb-4">
             <Bot className="w-16 h-16 mx-auto text-blue-500" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">Ready to Generate Content</h3>
+          <h3 className="text-xl font-semibold mb-2">
+            Ready to Generate Content
+          </h3>
           <p className="text-gray-600 mb-6">
-            Our AI will analyze your project and create professional product content including title, description, and marketing copy.
+            Our AI will analyze your project and create professional product
+            content including title, description, and marketing copy.
           </p>
           <button
             onClick={generateContent}
@@ -228,12 +255,22 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="h-5 w-5 text-red-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-red-800">AI内容生成失败</h3>
+              <h3 className="text-sm font-medium text-red-800">
+                AI内容生成失败
+              </h3>
               <div className="mt-2 text-sm text-red-700">
                 <p>{error}</p>
               </div>
@@ -253,10 +290,11 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
                   </button>
                 </div>
               </div>
-              {error.includes('频率限制') && (
+              {error.includes("频率限制") && (
                 <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
                   <p className="text-sm text-yellow-800">
-                    💡 <strong>建议:</strong> Gemini API有调用频率限制。请等待1-2分钟后重试，或者考虑升级到更高级别的API配额。
+                    💡 <strong>建议:</strong> Gemini
+                    API有调用频率限制。请等待1-2分钟后重试，或者考虑升级到更高级别的API配额。
                   </p>
                 </div>
               )}
@@ -272,7 +310,10 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
           <h3 className="text-xl font-semibold mb-2">Generating Content...</h3>
           <p className="text-gray-600">{generationStep}</p>
           <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
-            <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: '60%' }}></div>
+            <div
+              className="bg-primary h-2 rounded-full transition-all duration-500"
+              style={{ width: "60%" }}
+            ></div>
           </div>
           <p className="text-xs text-gray-500 mt-2">Generating Content...</p>
         </div>
@@ -305,8 +346,14 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold mb-2">Category & Pricing</h4>
                 <div className="space-y-1">
-                  <p><span className="text-gray-600">Category:</span> {data.aiContent.category}</p>
-                  <p><span className="text-gray-600">Price:</span> {data.aiContent.currency} {data.aiContent.price}</p>
+                  <p>
+                    <span className="text-gray-600">Category:</span>{" "}
+                    {data.aiContent.category}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Price:</span>{" "}
+                    {data.aiContent.currency} {data.aiContent.price}
+                  </p>
                 </div>
               </div>
 
@@ -314,7 +361,10 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
                 <h4 className="font-semibold mb-2">Keywords</h4>
                 <div className="flex flex-wrap gap-2">
                   {data.aiContent.keywords.map((keyword, index) => (
-                    <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                    <span
+                      key={index}
+                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
+                    >
                       {keyword}
                     </span>
                   ))}
@@ -325,12 +375,16 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
             <div className="space-y-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold mb-2">Description</h4>
-                <p className="text-gray-800 text-sm leading-relaxed">{data.aiContent.description}</p>
+                <p className="text-gray-800 text-sm leading-relaxed">
+                  {data.aiContent.description}
+                </p>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold mb-2">Marketing Copy</h4>
-                <p className="text-gray-800 text-sm leading-relaxed">{data.aiContent.marketingCopy}</p>
+                <p className="text-gray-800 text-sm leading-relaxed">
+                  {data.aiContent.marketingCopy}
+                </p>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
@@ -338,7 +392,9 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
                 <div className="space-y-2">
                   <div>
                     <span className="text-gray-600 text-sm">Twitter:</span>
-                    <p className="text-gray-800 text-sm">{data.aiContent.socialPosts.twitter}</p>
+                    <p className="text-gray-800 text-sm">
+                      {data.aiContent.socialPosts.twitter}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -355,7 +411,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
         >
           ← Back
         </button>
-        
+
         {hasContent && (
           <button
             onClick={onNext}
@@ -366,5 +422,5 @@ export function AIGenerationStep({ data, onUpdate, onNext, onPrev }: AIGeneratio
         )}
       </div>
     </div>
-  )
+  );
 }
