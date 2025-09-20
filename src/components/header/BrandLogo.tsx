@@ -13,7 +13,8 @@ export function BrandLogo() {
         alt="GrowthOS Logo" 
         width={160}
         height={40}
-        className="h-10 w-auto object-contain rounded-lg"
+        className="h-10 object-contain rounded-lg"
+        style={{ width: 'auto', height: '40px' }}
         quality={100}
         priority
         unoptimized

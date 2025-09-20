@@ -90,16 +90,18 @@ Create a high-quality promotional poster based on this description.`;
       mimeType: imagePart.inlineData.mimeType || "image/png",
       posterDescription,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API Error:", error);
 
     let errorMessage = "Failed to generate image.";
-    if (error.message?.includes("429")) {
-      errorMessage = "API LIMITED: Too many requests. Please try again later.";
-    } else if (error.message?.includes("API key")) {
-      errorMessage = "API ERROR: Invalid API key.";
-    } else if (error.message) {
-      errorMessage = error.message;
+    if (error instanceof Error) {
+      if (error.message?.includes("429")) {
+        errorMessage = "API LIMITED: Too many requests. Please try again later.";
+      } else if (error.message?.includes("API key")) {
+        errorMessage = "API ERROR: Invalid API key.";
+      } else {
+        errorMessage = error.message;
+      }
     }
 
     return NextResponse.json({ error: errorMessage }, { status: 500 });

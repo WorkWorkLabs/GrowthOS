@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 type FormData = {
   logoFile: File | null
@@ -85,8 +86,8 @@ export function BananaPosterGenerator({ isOpen, onClose }: BananaPosterGenerator
       if (data.imageBase64) {
         setImageUrl(`data:${data.mimeType || 'image/png'};base64,${data.imageBase64}`)
       }
-    } catch (e: any) {
-      setError(e?.message || 'An unexpected error occurred. Please try again.')
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -135,7 +136,13 @@ export function BananaPosterGenerator({ isOpen, onClose }: BananaPosterGenerator
               </div>
               {form.logoPreview && (
                 <div className="flex items-center gap-3 mt-3">
-                  <img src={form.logoPreview} alt="Product Logo Preview" className="w-24 h-24 object-cover rounded-xl border border-gray-200 bg-white" />
+                  <Image 
+                    src={form.logoPreview} 
+                    alt="Product Logo Preview" 
+                    width={96}
+                    height={96}
+                    className="w-24 h-24 object-cover rounded-xl border border-gray-200 bg-white" 
+                  />
                   <button type="button" className="text-yellow-600 hover:underline" onClick={removeLogo}>Remove Logo</button>
                 </div>
               )}
@@ -221,7 +228,13 @@ export function BananaPosterGenerator({ isOpen, onClose }: BananaPosterGenerator
           {imageUrl && (
             <div className="mt-8 p-4 rounded-xl bg-gray-50 border border-gray-200">
               <h3 className="font-semibold mb-4">Generated Poster</h3>
-              <img src={imageUrl} alt="AI Generated Poster" className="w-full h-auto rounded-lg border border-gray-200" />
+              <Image 
+                src={imageUrl} 
+                alt="AI Generated Poster" 
+                width={800}
+                height={600}
+                className="w-full h-auto rounded-lg border border-gray-200" 
+              />
             </div>
           )}
         </div>

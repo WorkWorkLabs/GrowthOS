@@ -72,39 +72,91 @@ export function useAuthProvider() {
     console.log('Loading user profile for ID:', userId)
     
     try {
+      // 查询用户资料
       const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select('id, username, email, bio, avatar, wallet_address, created_at')
         .eq('id', userId)
         .maybeSingle()
 
       console.log('Profile query result:', { data, error })
 
       if (error) {
-        console.error('Profile loading error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        })
-        
-        if (error.code !== 'PGRST116') {
-          throw error
-        }
+        console.error('Profile loading error details:', error)
+        throw error
       }
 
       if (data) {
         console.log('Profile loaded successfully:', data)
         setProfile(convertToUserProfile(data))
       } else {
-        console.log('No profile data found')
-        setProfile(null)
+        console.log('No profile data found, creating user profile...')
+        // 用户不存在，尝试创建
+        await createUserProfile(userId)
       }
     } catch (error) {
       console.error('Error loading user profile:', error)
     } finally {
       console.log('Profile loading completed')
       setLoading(false)
+    }
+  }
+
+  const createUserProfile = async (userId: string) => {
+    if (!supabase || !user) {
+      console.log('Cannot create profile - missing supabase or user:', { supabase: !!supabase, user: !!user })
+      return
+    }
+    
+    console.log('Creating user profile for:', userId)
+    console.log('Auth user data:', user)
+    
+    try {
+      // 从auth.users获取用户信息
+      const authUser = user
+      const username = authUser.user_metadata?.username || 
+                      authUser.email?.split('@')[0] || 
+                      `user_${userId.slice(0, 8)}`
+      
+      console.log('Preparing user data:', {
+        id: userId,
+        email: authUser.email,
+        username: username,
+        userMetadata: authUser.user_metadata
+      })
+      
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{
+          id: userId,
+          email: authUser.email!,
+          username: username,
+          bio: authUser.user_metadata?.bio || 'Hello! I\'m new to WorkWork.',
+          avatar: authUser.user_metadata?.avatar || 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+          email_verified: true
+        }])
+        .select()
+        .single()
+
+      console.log('Insert result:', { data, error })
+
+      if (error) {
+        console.error('Failed to create user profile:', error)
+        // 如果用户已存在（竞态条件），重新加载
+        if (error.code === '23505') {
+          console.log('User already exists, reloading...')
+          setTimeout(() => loadUserProfile(userId), 1000)
+          return
+        }
+        throw error
+      }
+
+      if (data) {
+        console.log('User profile created successfully:', data)
+        setProfile(convertToUserProfile(data))
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error)
     }
   }
 
