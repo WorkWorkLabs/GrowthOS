@@ -76,7 +76,7 @@ export function SmartWalletConnect({
     if (isBinding) return "Binding wallet...";
     if (isConnecting) return "Connecting...";
     if (isConnected && address) return `Connected: ${formatAddress(address)}`;
-    return "Connect Phantom";
+    return "Connect Wallet";
   };
 
   const getButtonStyle = () => {
@@ -140,8 +140,8 @@ export function SmartWalletConnect({
 
             {showBalance && balance && (
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">SOL Balance:</span>
-                <span className="font-mono text-sm">{balance} SOL</span>
+                <span className="text-sm text-gray-600">Balance:</span>
+                <span className="font-mono text-sm">{balance}</span>
               </div>
             )}
 
@@ -161,7 +161,7 @@ export function SmartWalletConnect({
       {!user && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-blue-600 text-sm">
-            💡 Tip: Please login first, then connect Phantom wallet for
+            💡 Tip: Please login first, then connect wallet for
             identity verification
           </p>
         </div>

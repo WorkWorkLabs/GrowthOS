@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
+import { useAccount, useConnect, useDisconnect, useSignMessage, useBalance } from 'wagmi'
 import { useAuth } from '@/providers/AuthProvider'
+import { SUPPORTED_NETWORKS, NetworkKey, DEFAULT_NETWORK } from '@/lib/web3-config'
 
 interface WalletState {
   address: string | null
@@ -8,6 +10,7 @@ interface WalletState {
   isBinding: boolean
   chainId: number | null
   balance: string | null
+  networkKey: NetworkKey | null
 }
 
 interface SignatureResult {
@@ -18,67 +21,63 @@ interface SignatureResult {
 
 export function useWallet() {
   const { connectWallet: bindWalletToAccount, user } = useAuth()
+  const { address, isConnected, chainId } = useAccount()
+  const { connect, connectors, isPending } = useConnect()
+  const { disconnect } = useDisconnect()
+  const { signMessageAsync } = useSignMessage()
+  
   const [wallet, setWallet] = useState<WalletState>({
     address: null,
     isConnected: false,
     isConnecting: false,
     isBinding: false,
     chainId: null,
-    balance: null
+    balance: null,
+    networkKey: null
   })
 
-  // 检查是否已连接
-  useEffect(() => {
-    checkConnection()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // 获取余额
+  const { data: balanceData } = useBalance({
+    address: address as `0x${string}` | undefined,
+  })
 
-  const checkConnection = async () => {
-    if (typeof window !== 'undefined' && window.solana) {
-      try {
-        const response = await window.solana.connect({ onlyIfTrusted: true })
-        if (response.publicKey) {
-          const address = response.publicKey.toString()
-          setWallet(prev => ({
-            ...prev,
-            address,
-            isConnected: true,
-            chainId: null // Solana不使用chainId
-          }))
-          
-          // 获取余额
-          getBalance(address)
-        }
-      } catch (error) {
-        // 忽略用户拒绝连接的错误，这是正常行为
-        if (error instanceof Error && error.message.includes('User rejected')) {
-          console.log('User has not previously connected wallet')
-        } else {
-          console.error('Failed to check wallet connection:', error)
-        }
-      }
-    }
+  // 监听账户变化
+  useEffect(() => {
+    const networkKey = findNetworkByChainId(chainId)
+    setWallet(prev => ({
+      ...prev,
+      address: address || null,
+      isConnected,
+      isConnecting: isPending,
+      chainId: chainId || null,
+      balance: balanceData ? `${Number(balanceData.formatted).toFixed(4)} ${balanceData.symbol}` : null,
+      networkKey
+    }))
+  }, [address, isConnected, isPending, chainId, balanceData])
+
+  // 根据chainId查找网络配置
+  const findNetworkByChainId = (chainId?: number): NetworkKey | null => {
+    if (!chainId) return null
+    const networkEntry = Object.entries(SUPPORTED_NETWORKS).find(
+      ([, config]) => config.id === chainId
+    )
+    return networkEntry ? (networkEntry[0] as NetworkKey) : null
   }
 
-  const connect = async () => {
-    if (!window.solana) {
-      throw new Error('Please install Phantom wallet')
+  // 连接钱包
+  const connectWallet = async () => {
+    if (!connectors.length) {
+      throw new Error('No wallet connectors available')
     }
 
     setWallet(prev => ({ ...prev, isConnecting: true }))
 
     try {
-      const response = await window.solana.connect()
-      const address = response.publicKey.toString()
-
-      setWallet(prev => ({
-        ...prev,
-        address,
-        isConnected: true,
-        isConnecting: false,
-        chainId: null
-      }))
-
-      getBalance(address)
+      // 优先使用MetaMask，如果没有则使用第一个可用的连接器
+      const preferredConnector = connectors.find(c => c.name.includes('MetaMask')) || connectors[0]
+      
+      await connect({ connector: preferredConnector })
+      
       return address
     } catch (error) {
       console.error('Failed to connect wallet:', error)
@@ -87,36 +86,33 @@ export function useWallet() {
     }
   }
 
-  const disconnect = () => {
-    if (window.solana) {
-      window.solana.disconnect()
-    }
+  // 断开连接
+  const disconnectWallet = () => {
+    disconnect()
     setWallet({
       address: null,
       isConnected: false,
       isConnecting: false,
       isBinding: false,
       chainId: null,
-      balance: null
+      balance: null,
+      networkKey: null
     })
   }
 
-  const signMessage = async (address: string, message: string): Promise<string> => {
-    if (!window.solana) {
-      throw new Error('Phantom wallet not found')
-    }
-
+  // 签名消息
+  const signMessage = async (message: string): Promise<string> => {
     try {
-      const encodedMessage = new TextEncoder().encode(message)
-      const signedMessage = await window.solana.signMessage(encodedMessage, 'utf8')
-      return Buffer.from(signedMessage.signature).toString('hex')
+      const signature = await signMessageAsync({ message })
+      return signature
     } catch (error) {
       console.error('Failed to sign message:', error)
       throw new Error('User cancelled signature or signing failed')
     }
   }
 
-  const connectAndBind = async () => {
+  // 连接并绑定钱包到账户
+  const connectAndBind = async (): Promise<SignatureResult> => {
     if (!user) {
       throw new Error('Please login first')
     }
@@ -129,23 +125,37 @@ export function useWallet() {
     setWallet(prev => ({ ...prev, isBinding: true }))
 
     try {
-      // Step 1: Connect wallet
-      const address = await connect()
-      if (!address) throw new Error('Wallet connection failed')
+      // Step 1: Connect wallet if not connected
+      let walletAddress = address
+      if (!isConnected) {
+        await connectWallet()
+        walletAddress = address // 连接后重新获取地址
+      }
+
+      if (!walletAddress) {
+        throw new Error('Wallet connection failed')
+      }
 
       // Step 2: Create verification message
       const timestamp = Date.now()
-      const message = `GrowthOS Wallet Verification\n\nAddress: ${address}\nUser ID: ${user.id}\nTime: ${new Date(timestamp).toISOString()}\n\nPlease sign to verify wallet ownership`
+      const message = `GrowthOS Wallet Verification
+
+Address: ${walletAddress}
+User ID: ${user.id}
+Network: ${wallet.networkKey || 'Unknown'}
+Time: ${new Date(timestamp).toISOString()}
+
+Please sign to verify wallet ownership`
 
       // Step 3: Sign message
-      const signature = await signMessage(address, message)
+      const signature = await signMessage(message)
 
       // Step 4: Verify and bind to account (with retry for new users)
       await new Promise(resolve => setTimeout(resolve, 1000)) // 等待1秒让数据库触发器完成
-      await bindWalletToAccount(address)
+      await bindWalletToAccount(walletAddress)
 
-      console.log('Wallet binding successful:', { address, signature })
-      return { address, signature, message }
+      console.log('Wallet binding successful:', { address: walletAddress, signature })
+      return { address: walletAddress, signature, message }
 
     } catch (error) {
       console.error('Wallet binding failed:', error)
@@ -155,36 +165,68 @@ export function useWallet() {
     }
   }
 
-  const getBalance = async (address: string) => {
-    try {
-      // 使用Solana Web3.js获取余额的简化版本
-      // 实际项目中应该使用@solana/web3.js库
-      const balanceInSol = "0.0000" // 占位符，需要实际实现
-      setWallet(prev => ({ ...prev, balance: balanceInSol }))
-    } catch (error) {
-      console.error('Failed to get balance:', error)
+  // 切换网络
+  const switchNetwork = async (networkKey: NetworkKey) => {
+    const network = SUPPORTED_NETWORKS[networkKey]
+    if (!network) {
+      throw new Error(`Unsupported network: ${networkKey}`)
     }
+
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${network.id.toString(16)}` }],
+        })
+      }
+    } catch (error: any) {
+      // 如果网络不存在，尝试添加
+      if (error.code === 4902) {
+        await addNetwork(networkKey)
+      } else {
+        throw error
+      }
+    }
+  }
+
+  // 添加网络
+  const addNetwork = async (networkKey: NetworkKey) => {
+    const network = SUPPORTED_NETWORKS[networkKey]
+    if (!network || !window.ethereum) {
+      throw new Error('Cannot add network')
+    }
+
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: `0x${network.id.toString(16)}`,
+        chainName: network.name,
+        nativeCurrency: network.nativeCurrency,
+        rpcUrls: [network.rpcUrl],
+        blockExplorerUrls: [network.blockExplorer]
+      }]
+    })
   }
 
   return {
     ...wallet,
-    connect,
-    disconnect,
+    connect: connectWallet,
+    disconnect: disconnectWallet,
     connectAndBind,
     signMessage,
-    getBalance: () => wallet.address && getBalance(wallet.address)
+    switchNetwork,
+    addNetwork,
+    getCurrentNetwork: () => wallet.networkKey ? SUPPORTED_NETWORKS[wallet.networkKey] : null
   }
 }
 
 // 扩展window对象类型
 declare global {
   interface Window {
-    solana?: {
-      connect: (options?: { onlyIfTrusted?: boolean }) => Promise<{ publicKey: { toString(): string } }>
-      disconnect: () => Promise<void>
-      signMessage: (message: Uint8Array, encoding?: string) => Promise<{ signature: Uint8Array }>
-      on: (event: string, callback: (...args: unknown[]) => void) => void
-      removeListener: (event: string, callback: (...args: unknown[]) => void) => void
+    ethereum?: {
+      request: (args: { method: string; params?: any[] }) => Promise<any>
+      on: (event: string, callback: (...args: any[]) => void) => void
+      removeListener: (event: string, callback: (...args: any[]) => void) => void
     }
   }
 }
