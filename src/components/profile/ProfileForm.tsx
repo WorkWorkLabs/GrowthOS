@@ -6,6 +6,8 @@ import { useAuth } from '@/providers/AuthProvider'
 import { MessageCircle, CreditCard, Linkedin, Globe, CheckCircle, Lock, AlertCircle, Shield, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SmartWalletConnect } from '@/components/wallet/SmartWalletConnect'
+import { MobileKaiaWallet } from '@/components/wallet/MobileKaiaWallet'
+import { MiniDappWallet } from '@/components/wallet/MiniDappWallet'
 
 interface ProfileFormProps {
   profile: UserProfile
@@ -36,6 +38,8 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
   const [loading, setLoading] = useState(false)
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
   const [validating, setValidating] = useState<{[key: string]: boolean}>({})
+  const [showKaiaWallet, setShowKaiaWallet] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [showCreditCard, setShowCreditCard] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -339,45 +343,92 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
 
         {/* Wallet Connection */}
         <div>
-          <h3 className="text-lg font-medium text-text-primary mb-4">Solana Wallet</h3>
-          <div className="bg-gray-50 rounded-lg p-4">
-            {profile.walletAddress ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Lock className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Connected Wallet</p>
-                    <p className="text-xs text-gray-500 font-mono">
-                      {profile.walletAddress.slice(0, 6)}...{profile.walletAddress.slice(-4)}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">Solana wallet cannot be changed once connected</p>
+          <h3 className="text-lg font-medium text-text-primary mb-4">钱包连接</h3>
+          
+          {/* 钱包选择器 */}
+          <div className="mb-4">
+            <div className="flex space-x-2 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setShowKaiaWallet(false)}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  !showKaiaWallet 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Solana
+              </button>
+              <button
+                onClick={() => setShowKaiaWallet(true)}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  showKaiaWallet 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Kaia MiniDapp
+              </button>
+            </div>
+          </div>
+
+          {/* Solana钱包 */}
+          {!showKaiaWallet && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              {profile.walletAddress ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Lock className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">已连接钱包</p>
+                      <p className="text-xs text-gray-500 font-mono">
+                        {profile.walletAddress.slice(0, 6)}...{profile.walletAddress.slice(-4)}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Solana钱包连接后无法更改</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                      已连接
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                    Connected
-                  </span>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600">连接Solana钱包（可选）</p>
+                  <SmartWalletConnect
+                    onSuccess={(address) => {
+                      alert('Solana钱包连接成功！')
+                      onSave()
+                    }}
+                    onError={(error) => {
+                      console.error('钱包连接失败:', error)
+                      alert('钱包连接失败: ' + error)
+                    }}
+                    className="w-full"
+                  />
                 </div>
-              </div>
-            ) : (
+              )}
+            </div>
+          )}
+
+          {/* Kaia MiniDapp钱包 */}
+          {showKaiaWallet && (
+            <div className="bg-gray-50 rounded-lg p-4">
               <div className="space-y-3">
-                <p className="text-sm text-gray-600">Connect your Solana wallet (optional)</p>
-                <SmartWalletConnect
-                  onSuccess={(address) => {
-                    alert('Solana wallet connected successfully!')
-                    // 刷新profile数据
-                    onSave()
+                <p className="text-sm text-gray-600">连接Kaia钱包享受完整MiniDapp体验</p>
+                <MiniDappWallet
+                  onConnect={(address) => {
+                    alert(`🎉 Kaia MiniDapp钱包连接成功: ${address}`)
                   }}
                   onError={(error) => {
-                    console.error('Failed to connect wallet:', error)
-                    alert('Failed to connect wallet: ' + error)
+                    console.error('Kaia MiniDapp钱包连接失败:', error)
                   }}
-                  className="w-full"
+                  showBalance={true}
                 />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Social Media */}

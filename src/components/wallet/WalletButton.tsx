@@ -8,6 +8,14 @@ export function WalletButton() {
   const { address, isConnected, isConnecting, isBinding, balance, connectAndBind, disconnect } = useWallet()
   const { user } = useAuth()
   const [error, setError] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
+
+  // 检测移动端
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+    }
+  })
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`
