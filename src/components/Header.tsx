@@ -7,6 +7,7 @@ import { User, LogOut, Settings, Package, ShoppingBag } from 'lucide-react'
 import { BrandLogo } from './header/BrandLogo'
 import { AuthModal } from './auth/AuthModal'
 import { useAuth } from '@/providers/AuthProvider'
+import { useLiff } from '@/hooks/useLiff'
 
 export function Header() {
   const [showDropdown, setShowDropdown] = useState(false)
@@ -15,6 +16,7 @@ export function Header() {
   const router = useRouter()
   
   const { user, profile, signOut } = useAuth()
+  const { isInClient, profile: liffProfile, isLoggedIn: isLiffLoggedIn } = useLiff()
 
   const handleAuthClick = (mode: 'signin' | 'signup') => {
     setAuthMode(mode)
@@ -32,7 +34,15 @@ export function Header() {
         <BrandLogo />
         
         <div className="flex items-center space-x-4">
-          {user && profile ? (
+          {/* 显示LINE MiniDapp状态 */}
+          {isInClient && (
+            <div className="hidden sm:flex items-center space-x-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              LINE MiniDapp
+            </div>
+          )}
+          
+          {(user && profile) || (isLiffLoggedIn && liffProfile) ? (
             // Authenticated user
             <div className="relative">
               <button
@@ -40,8 +50,8 @@ export function Header() {
                 className="flex items-center space-x-2 bg-white hover:bg-gray-50 rounded-full px-3 py-2 transition-colors shadow-sm"
               >
                 <Image
-                  src={profile.avatar || '/growthos-logo.png'}
-                  alt={profile.username}
+                  src={(profile?.avatar || liffProfile?.pictureUrl) || '/growthos-logo.png'}
+                  alt={profile?.username || liffProfile?.displayName || 'User'}
                   width={32}
                   height={32}
                   className="w-8 h-8 rounded-full object-cover"
@@ -51,20 +61,25 @@ export function Header() {
                   }}
                 />
                 <span className="text-gray-900 font-medium hidden sm:block">
-                  {profile.username}
+                  {profile?.username || liffProfile?.displayName || 'User'}
                 </span>
               </button>
 
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-100 bg-white">
-                    <p className="text-sm font-medium text-gray-900 truncate">{profile.username}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {profile?.username || liffProfile?.displayName || 'User'}
+                    </p>
                     <p className="text-xs text-gray-500 truncate">
-                      {profile.walletAddress 
+                      {profile?.walletAddress 
                         ? `${profile.walletAddress.slice(0, 6)}...${profile.walletAddress.slice(-4)}`
-                        : profile.email
+                        : profile?.email || (liffProfile && 'LINE用户')
                       }
                     </p>
+                    {isInClient && (
+                      <p className="text-xs text-green-600 mt-1">在LINE中运行</p>
+                    )}
                   </div>
                   
                   <button
