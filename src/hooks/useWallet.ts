@@ -4,7 +4,7 @@ import { useAuth } from '@/providers/AuthProvider'
 import { SUPPORTED_NETWORKS, NetworkKey } from '@/lib/web3-config'
 
 interface WalletState {
-  address: string | null
+  address: `0x${string}` | null
   isConnected: boolean
   isConnecting: boolean
   isBinding: boolean
@@ -16,7 +16,7 @@ interface WalletState {
 interface SignatureResult {
   signature: string
   message: string
-  address: string
+  address: `0x${string}`
 }
 
 export function useWallet() {
@@ -46,7 +46,7 @@ export function useWallet() {
     const networkKey = findNetworkByChainId(chainId)
     setWallet(prev => ({
       ...prev,
-      address: address || null,
+      address: address as `0x${string}` | null,
       isConnected,
       isConnecting: isPending,
       chainId: chainId || null,
@@ -65,7 +65,7 @@ export function useWallet() {
   }
 
   // 连接钱包
-  const connectWallet = async () => {
+  const connectWallet = async (): Promise<`0x${string}`> => {
     if (!connectors.length) {
       throw new Error('No wallet connectors available')
     }
@@ -76,13 +76,20 @@ export function useWallet() {
       // 优先使用MetaMask，如果没有则使用第一个可用的连接器
       const preferredConnector = connectors.find(c => c.name.includes('MetaMask')) || connectors[0]
       
-      const result = await connect({ connector: preferredConnector })
+      await connect({ connector: preferredConnector })
       
       // 等待钱包状态更新
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      let attempts = 0
+      while (!address && attempts < 10) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        attempts++
+      }
       
-      // 返回连接结果中的地址，而不是当前的address状态
-      return result.accounts[0]
+      if (!address) {
+        throw new Error('Failed to get wallet address after connection')
+      }
+      
+      return address as `0x${string}`
     } catch (error) {
       console.error('Failed to connect wallet:', error)
       setWallet(prev => ({ ...prev, isConnecting: false }))
@@ -130,7 +137,7 @@ export function useWallet() {
 
     try {
       // Step 1: Connect wallet if not connected
-      let walletAddress = address
+      let walletAddress: `0x${string}` | undefined = address
       if (!isConnected) {
         walletAddress = await connectWallet()
       }
