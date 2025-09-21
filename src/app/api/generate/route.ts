@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    // 优先使用专用的Banana API Key，如果没有则使用通用的
+    const apiKey = process.env.BANANA_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "API Key 未配置" }, { status: 500 });
     }
