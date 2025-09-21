@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect, useSignMessage, useBalance } from 'wagmi'
 import { useAuth } from '@/providers/AuthProvider'
-import { SUPPORTED_NETWORKS, NetworkKey, DEFAULT_NETWORK } from '@/lib/web3-config'
+import { SUPPORTED_NETWORKS, NetworkKey } from '@/lib/web3-config'
 
 interface WalletState {
   address: string | null
@@ -179,9 +179,9 @@ Please sign to verify wallet ownership`
           params: [{ chainId: `0x${network.id.toString(16)}` }],
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 如果网络不存在，尝试添加
-      if (error.code === 4902) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 4902) {
         await addNetwork(networkKey)
       } else {
         throw error
@@ -224,9 +224,9 @@ Please sign to verify wallet ownership`
 declare global {
   interface Window {
     ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>
-      on: (event: string, callback: (...args: any[]) => void) => void
-      removeListener: (event: string, callback: (...args: any[]) => void) => void
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+      on: (event: string, callback: (...args: unknown[]) => void) => void
+      removeListener: (event: string, callback: (...args: unknown[]) => void) => void
     }
   }
 }

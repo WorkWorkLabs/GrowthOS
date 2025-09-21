@@ -1,7 +1,7 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
 import { http } from 'wagmi'
 import { base, polygon } from 'wagmi/chains'
-import { SUPPORTED_NETWORKS } from './web3-config'
+// import { SUPPORTED_NETWORKS } from './web3-config'
 
 // 自定义Kaia链配置
 export const kaia = {
