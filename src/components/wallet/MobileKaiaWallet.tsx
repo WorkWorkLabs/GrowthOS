@@ -30,10 +30,10 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
     if (typeof window === 'undefined') return null
     
     // Kaia Wallet
-    if (window.ethereum?.isKaikas) return 'kaikas'
+    if (window.ethereum && 'isKaikas' in window.ethereum && (window.ethereum as {isKaikas?: boolean}).isKaikas) return 'kaikas'
     
     // MetaMask on mobile
-    if (window.ethereum?.isMetaMask && isMobile) return 'metamask-mobile'
+    if (window.ethereum && 'isMetaMask' in window.ethereum && (window.ethereum as {isMetaMask?: boolean}).isMetaMask && isMobile) return 'metamask-mobile'
     
     // 通用 Ethereum provider
     if (window.ethereum) return 'ethereum'
@@ -67,6 +67,10 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
       }
 
       // 切换到Kaia网络
+      if (!window.ethereum) {
+        throw new Error('未检测到钱包，请安装MetaMask或Kaia钱包')
+      }
+
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
@@ -75,6 +79,7 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
       } catch (switchError: unknown) {
         // 如果网络不存在，添加Kaia网络
         if (switchError && typeof switchError === 'object' && 'code' in switchError && switchError.code === 4902) {
+          if (!window.ethereum) throw new Error('钱包连接已断开')
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
@@ -95,6 +100,10 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
       }
 
       // 连接钱包
+      if (!window.ethereum) {
+        throw new Error('钱包连接已断开')
+      }
+      
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
       }) as string[]
@@ -107,10 +116,14 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
       setAddress(connectedAddress)
 
       // 获取余额
+      if (!window.ethereum) {
+        throw new Error('钱包连接已断开')
+      }
+      
       const balanceWei = await window.ethereum.request({
         method: 'eth_getBalance',
         params: [connectedAddress, 'latest']
-      })
+      }) as string
       
       const balanceKaia = (parseInt(balanceWei, 16) / 1e18).toFixed(4)
       setBalance(`${balanceKaia} KAIA`)

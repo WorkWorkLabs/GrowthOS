@@ -85,7 +85,7 @@ export function ThirdWebProvider({ children, clientId }: ThirdWebProviderProps) 
         const balanceWei = await window.ethereum.request({
           method: 'eth_getBalance',
           params: [connectedAddress, 'latest']
-        })
+        }) as string
         
         const balanceKaia = (parseInt(balanceWei, 16) / 1e18).toFixed(4)
         setBalance(`${balanceKaia} KAIA`)
@@ -120,7 +120,7 @@ export function ThirdWebProvider({ children, clientId }: ThirdWebProviderProps) 
     const txHash = await window.ethereum.request({
       method: 'eth_sendTransaction',
       params: [transactionParams]
-    })
+    }) as string
 
     return txHash
   }
@@ -128,7 +128,8 @@ export function ThirdWebProvider({ children, clientId }: ThirdWebProviderProps) 
   // 监听账户变化
   useEffect(() => {
     if (window.ethereum) {
-      const handleAccountsChanged = (accounts: string[]) => {
+      const handleAccountsChanged = (...args: unknown[]) => {
+        const accounts = args[0] as string[]
         if (accounts.length === 0) {
           disconnect()
         } else if (accounts[0] !== address) {
@@ -138,7 +139,9 @@ export function ThirdWebProvider({ children, clientId }: ThirdWebProviderProps) 
 
       window.ethereum.on('accountsChanged', handleAccountsChanged)
       return () => {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
+        if (window.ethereum) {
+          window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
+        }
       }
     }
   }, [address])
