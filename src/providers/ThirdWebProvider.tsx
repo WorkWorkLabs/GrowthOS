@@ -74,9 +74,9 @@ export function ThirdWebProvider({ children, clientId }: ThirdWebProviderProps) 
       // 连接钱包
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
-      })
+      }) as string[]
 
-      if (accounts.length > 0) {
+      if (accounts && accounts.length > 0) {
         const connectedAddress = accounts[0]
         setAddress(connectedAddress)
         setIsConnected(true)

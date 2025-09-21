@@ -97,9 +97,9 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
       // 连接钱包
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
-      })
+      }) as string[]
 
-      if (accounts.length === 0) {
+      if (!accounts || accounts.length === 0) {
         throw new Error('钱包连接被拒绝')
       }
 

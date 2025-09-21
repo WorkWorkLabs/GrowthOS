@@ -58,9 +58,9 @@ export function KaiaPayment({
       // 获取账户
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
-      })
+      }) as string[]
 
-      if (accounts.length === 0) {
+      if (!accounts || accounts.length === 0) {
         throw new Error('请连接钱包')
       }
 
@@ -82,7 +82,7 @@ export function KaiaPayment({
       const hash = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [transactionParams]
-      })
+      }) as string
 
       setTxHash(hash)
       setStatus('success')
