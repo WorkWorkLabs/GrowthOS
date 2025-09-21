@@ -38,27 +38,28 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
   }
 
   return (
-    <div className="px-4 md:pl-20 md:pr-20 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
-      {/* 左侧控件组 */}
-      <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full md:w-auto">
-        <button 
-          onClick={onCreateProject}
-          className="bg-primary text-text-inverse px-3 md:px-4 py-2 rounded-md text-sm md:text-md font-medium shadow-button hover:bg-blue-500 transition-colors whitespace-nowrap"
-        >
-          <span className="hidden sm:inline">Create Project</span>
-          <span className="sm:hidden">Create</span>
-        </button>
+    <div className="px-4 md:px-6 lg:px-20 py-3 space-y-3">
+      {/* 第一行：Create按钮和搜索 */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button 
+            onClick={onCreateProject}
+            className="bg-primary text-text-inverse px-4 py-2 rounded-md text-sm font-medium shadow-button hover:bg-blue-500 transition-colors"
+          >
+            Create
+          </button>
 
-        <button 
-          onClick={onBananaGenerate}
-          className="bg-yellow-400 text-black px-3 md:px-4 py-2 rounded-md text-sm md:text-md font-medium shadow-button hover:bg-yellow-500 transition-colors whitespace-nowrap"
-        >
-          🍌 <span className="hidden sm:inline">Generate Poster</span>
-        </button>
+          <button 
+            onClick={onBananaGenerate}
+            className="bg-yellow-400 text-black px-3 py-2 rounded-md text-sm font-medium shadow-button hover:bg-yellow-500 transition-colors"
+          >
+            🍌
+          </button>
+        </div>
 
         {/* Search Box */}
         <div className={`
-          relative flex items-center bg-white rounded-lg shadow-button transition-all duration-200
+          relative flex items-center bg-white rounded-lg shadow-button transition-all duration-200 flex-1
           ${isSearchFocused ? 'ring-2 ring-primary ring-opacity-50' : ''}
         `}>
           {isSearching && searchQuery ? (
@@ -72,8 +73,8 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
             onChange={handleSearchChange}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
-            placeholder="Search products, creators, or tags..."
-            className="w-48 md:w-64 pl-10 pr-10 py-2 text-sm border-0 rounded-lg focus:outline-none focus:ring-0 bg-transparent text-text-primary placeholder-gray-400"
+            placeholder="Search products..."
+            className="w-full pl-10 pr-10 py-2 text-sm border-0 rounded-lg focus:outline-none focus:ring-0 bg-transparent text-text-primary placeholder-gray-400"
           />
           {searchQuery && (
             <button
@@ -84,15 +85,18 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
             </button>
           )}
         </div>
+      </div>
 
+      {/* 第二行：筛选和分类 */}
+      <div className="flex items-center justify-between gap-3">
         {/* Filter Options */}
-        <div className="bg-white rounded-md p-1 shadow-button flex overflow-x-auto">
+        <div className="bg-white rounded-md p-1 shadow-button flex overflow-x-auto flex-shrink-0">
           {FILTER_OPTIONS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => handleFilterClick(key)}
               className={`
-                px-2 md:px-3 py-1 text-xs md:text-sm font-medium rounded transition-colors whitespace-nowrap
+                px-3 py-1 text-sm font-medium rounded transition-colors whitespace-nowrap
                 ${activeFilter === key 
                   ? 'bg-gray-200 text-text-primary' 
                   : 'text-text-primary hover:bg-gray-100'
@@ -103,13 +107,15 @@ export function ControlBar({ onFilterChange, onCreateProject, onSearch, activeFi
             </button>
           ))}
         </div>
-      </div>
 
-      {/* 右侧专区选择器 */}
-      <CategoryZones
-        activeZone={activeZone}
-        onZoneChange={onZoneChange}
-      />
+        {/* 分类选择器 */}
+        <div className="flex-shrink-0">
+          <CategoryZones
+            activeZone={activeZone}
+            onZoneChange={onZoneChange}
+          />
+        </div>
+      </div>
     </div>
   )
 }

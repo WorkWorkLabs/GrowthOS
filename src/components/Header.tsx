@@ -30,15 +30,15 @@ export function Header() {
 
   return (
     <>
-      <div className="mx-6 mt-4 h-14 bg-primary flex items-center justify-between px-2 shadow-button rounded-full">
+      <div className="mx-3 md:mx-6 mt-4 h-12 md:h-14 bg-primary flex items-center justify-between px-3 md:px-2 shadow-button rounded-full">
         <BrandLogo />
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {/* 显示LINE MiniDapp状态 */}
           {isInClient && (
-            <div className="hidden sm:flex items-center space-x-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+            <div className="hidden md:flex items-center space-x-2 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              LINE MiniDapp
+              LINE
             </div>
           )}
           
@@ -47,20 +47,20 @@ export function Header() {
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center space-x-2 bg-white hover:bg-gray-50 rounded-full px-3 py-2 transition-colors shadow-sm"
+                className="flex items-center space-x-1 md:space-x-2 bg-white hover:bg-gray-50 rounded-full px-2 md:px-3 py-1 md:py-2 transition-colors shadow-sm"
               >
                 <Image
                   src={(profile?.avatar || liffProfile?.pictureUrl) || '/growthos-logo.png'}
                   alt={profile?.username || liffProfile?.displayName || 'User'}
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 rounded-full object-cover"
+                  width={28}
+                  height={28}
+                  className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
                     target.src = '/growthos-logo.png'
                   }}
                 />
-                <span className="text-gray-900 font-medium hidden sm:block">
+                <span className="text-gray-900 font-medium hidden md:block text-sm">
                   {profile?.username || liffProfile?.displayName || 'User'}
                 </span>
               </button>
@@ -140,16 +140,16 @@ export function Header() {
             </div>
           ) : (
             // Unauthenticated user
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 md:space-x-2">
               <button
                 onClick={() => handleAuthClick('signin')}
-                className="text-white hover:text-white/80 font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors"
+                className="text-white hover:text-white/80 font-medium px-3 md:px-4 py-1 md:py-2 rounded-full hover:bg-white/10 transition-colors text-sm"
               >
                 Sign In
               </button>
               <button
                 onClick={() => handleAuthClick('signup')}
-                className="bg-white text-primary hover:bg-white/90 font-medium px-4 py-2 rounded-full transition-colors"
+                className="bg-white text-primary hover:bg-white/90 font-medium px-3 md:px-4 py-1 md:py-2 rounded-full transition-colors text-sm"
               >
                 Sign Up
               </button>
