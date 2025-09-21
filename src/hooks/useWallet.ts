@@ -76,9 +76,13 @@ export function useWallet() {
       // 优先使用MetaMask，如果没有则使用第一个可用的连接器
       const preferredConnector = connectors.find(c => c.name.includes('MetaMask')) || connectors[0]
       
-      await connect({ connector: preferredConnector })
+      const result = await connect({ connector: preferredConnector })
       
-      return address
+      // 等待钱包状态更新
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // 返回连接结果中的地址，而不是当前的address状态
+      return result.accounts[0]
     } catch (error) {
       console.error('Failed to connect wallet:', error)
       setWallet(prev => ({ ...prev, isConnecting: false }))
@@ -128,8 +132,7 @@ export function useWallet() {
       // Step 1: Connect wallet if not connected
       let walletAddress = address
       if (!isConnected) {
-        await connectWallet()
-        walletAddress = address // 连接后重新获取地址
+        walletAddress = await connectWallet()
       }
 
       if (!walletAddress) {

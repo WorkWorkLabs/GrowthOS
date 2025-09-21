@@ -420,9 +420,11 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
                 <MiniDappWallet
                   onConnect={(address) => {
                     alert(`🎉 Kaia MiniDapp钱包连接成功: ${address}`)
+                    // 保持在编辑页面，不要自动关闭
                   }}
                   onError={(error) => {
                     console.error('Kaia MiniDapp钱包连接失败:', error)
+                    alert('Kaia钱包连接失败: ' + error)
                   }}
                   showBalance={true}
                 />

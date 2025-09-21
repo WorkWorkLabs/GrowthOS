@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useThirdWeb } from '@/providers/ThirdWebProvider'
 import { useLiff } from '@/hooks/useLiff'
 import { useAuth } from '@/providers/AuthProvider'
@@ -23,6 +23,17 @@ export function MiniDappWallet({
   const { isInClient, isLiffReady } = useLiff()
   const { user } = useAuth()
   const [error, setError] = useState<string>('')
+  const prevConnectedRef = useRef(false)
+
+  // 监听连接状态变化，在首次连接成功时调用回调
+  useEffect(() => {
+    if (isConnected && address && !prevConnectedRef.current) {
+      prevConnectedRef.current = true
+      onConnect?.(address)
+    } else if (!isConnected) {
+      prevConnectedRef.current = false
+    }
+  }, [isConnected, address, onConnect])
 
   const handleConnect = async () => {
     if (!user) {
@@ -36,9 +47,7 @@ export function MiniDappWallet({
     
     try {
       await connectWallet()
-      if (address) {
-        onConnect?.(address)
-      }
+      // 连接成功的回调会在ThirdWebProvider中的状态更新后触发
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : '钱包连接失败'
       setError(errorMsg)
