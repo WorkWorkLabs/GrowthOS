@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowthOS MiniDapp Demo</title>
+    <script src="https://static.line-scdn.net/liff/edge/2.1/liff.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .status-value {
+            font-weight: 600;
+            color: #4ade80;
+        }
+        
+        .status-error {
+            color: #f87171;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 222, 128, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .demo-actions {
+            margin-top: 20px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .feature-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .feature-desc {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">GO</div>
+            <h1 class="title">GrowthOS</h1>
+            <p class="subtitle">Web3数字游民操作系统 - LINE MiniDapp演示版</p>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-bottom: 16px;">连接状态</h3>
+            <div class="status-item">
+                <span class="status-label">LINE用户</span>
+                <span id="line-status" class="status-value">检测中...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Kaia钱包</span>
+                <span id="wallet-status" class="status-value">未连接</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">网络</span>
+                <span id="network-status" class="status-value">Kairos测试网</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">余额</span>
+                <span id="balance-status" class="status-value">0 KAIA</span>
+            </div>
+        </div>
+        
+        <div class="demo-actions">
+            <button id="connect-wallet" class="btn btn-primary">
+                连接Kaia钱包
+            </button>
+            <button id="get-faucet" class="btn btn-secondary" disabled>
+                获取测试代币
+            </button>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-bottom: 16px;">核心功能演示</h3>
+            <div class="feature-card">
+                <div class="feature-title">🤖 AI产品生成</div>
+                <div class="feature-desc">集成GPT-4生成数字产品</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-title">💰 去中心化支付</div>
+                <div class="feature-desc">基于Kaia的智能合约支付</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-title">🌍 数字游民社区</div>
+                <div class="feature-desc">全球远程工作者协作网络</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-title">🔐 Web3身份</div>
+                <div class="feature-desc">链上信誉和身份认证</div>
+            </div>
+        </div>
+        
+        <button id="demo-transaction" class="btn btn-primary" disabled>
+            演示交易流程
+        </button>
+    </div>
+    
+    <script>
+        // Kaia Kairos 测试网配置
+        const KAIA_TESTNET = {
+            chainId: '0x3e9', // 1001
+            chainName: 'Kaia Kairos Testnet',
+            nativeCurrency: {
+                name: 'KAIA',
+                symbol: 'KAIA',
+                decimals: 18
+            },
+            rpcUrls: ['https://1001.rpc.thirdweb.com'],
+            blockExplorerUrls: ['https://kairos.kaiascope.com']
+        };
+        
+        let isLiffInitialized = false;
+        let currentAccount = null;
+        let provider = null;
+        
+        // 初始化LIFF
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: 'demo-liff-id' });
+                isLiffInitialized = true;
+                
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    document.getElementById('line-status').textContent = profile.displayName;
+                    document.getElementById('line-status').className = 'status-value';
+                } else {
+                    document.getElementById('line-status').textContent = '未登录';
+                    document.getElementById('line-status').className = 'status-error';
+                    // liff.login();
+                }
+            } catch (error) {
+                console.log('LIFF初始化失败，使用演示模式:', error);
+                document.getElementById('line-status').textContent = '演示用户';
+                document.getElementById('line-status').className = 'status-value';
+            }
+        }
+        
+        // 连接钱包
+        async function connectWallet() {
+            const connectBtn = document.getElementById('connect-wallet');
+            connectBtn.innerHTML = '<span class="loading"></span>连接中...';
+            connectBtn.disabled = true;
+            
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    alert('请安装MetaMask或Kaia钱包');
+                    return;
+                }
+                
+                // 检查是否已连接到Kaia网络
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: KAIA_TESTNET.chainId }],
+                    });
+                } catch (switchError) {
+                    // 如果网络不存在，添加网络
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [KAIA_TESTNET],
+                        });
+                    }
+                }
+                
+                // 请求账户连接
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                
+                currentAccount = accounts[0];
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                
+                // 更新UI
+                document.getElementById('wallet-status').textContent = `${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
+                document.getElementById('wallet-status').className = 'status-value';
+                
+                // 获取余额
+                const balance = await provider.getBalance(currentAccount);
+                const balanceInKaia = ethers.utils.formatEther(balance);
+                document.getElementById('balance-status').textContent = `${parseFloat(balanceInKaia).toFixed(4)} KAIA`;
+                
+                // 启用其他按钮
+                document.getElementById('get-faucet').disabled = false;
+                document.getElementById('demo-transaction').disabled = false;
+                
+            } catch (error) {
+                console.error('钱包连接失败:', error);
+                alert('钱包连接失败: ' + error.message);
+                document.getElementById('wallet-status').textContent = '连接失败';
+                document.getElementById('wallet-status').className = 'status-error';
+            } finally {
+                connectBtn.innerHTML = '连接Kaia钱包';
+                connectBtn.disabled = false;
+            }
+        }
+        
+        // 获取测试代币
+        async function getFaucet() {
+            if (!currentAccount) {
+                alert('请先连接钱包');
+                return;
+            }
+            
+            alert(`请访问 https://faucet.lambda256.io/ 获取测试代币\n\n你的地址: ${currentAccount}\n\n每24小时可获取50 KAIA测试币`);
+        }
+        
+        // 演示交易
+        async function demoTransaction() {
+            if (!provider || !currentAccount) {
+                alert('请先连接钱包');
+                return;
+            }
+            
+            try {
+                const demoBtn = document.getElementById('demo-transaction');
+                demoBtn.innerHTML = '<span class="loading"></span>处理中...';
+                demoBtn.disabled = true;
+                
+                // 模拟智能合约交互
+                const signer = provider.getSigner();
+                
+                // 这里可以添加实际的智能合约调用
+                alert('演示: 在实际应用中，这里会执行智能合约交易，如购买数字产品、创建NFT等');
+                
+            } catch (error) {
+                console.error('交易失败:', error);
+                alert('交易失败: ' + error.message);
+            } finally {
+                const demoBtn = document.getElementById('demo-transaction');
+                demoBtn.innerHTML = '演示交易流程';
+                demoBtn.disabled = false;
+            }
+        }
+        
+        // 事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            initLiff();
+            
+            document.getElementById('connect-wallet').addEventListener('click', connectWallet);
+            document.getElementById('get-faucet').addEventListener('click', getFaucet);
+            document.getElementById('demo-transaction').addEventListener('click', demoTransaction);
+            
+            // 监听账户变化
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', function(accounts) {
+                    if (accounts.length === 0) {
+                        document.getElementById('wallet-status').textContent = '未连接';
+                        document.getElementById('wallet-status').className = 'status-error';
+                        currentAccount = null;
+                    } else {
+                        currentAccount = accounts[0];
+                        connectWallet();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
