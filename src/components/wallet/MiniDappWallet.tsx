@@ -39,8 +39,8 @@ export function MiniDappWallet({
       if (address) {
         onConnect?.(address)
       }
-    } catch (err: any) {
-      const errorMsg = err.message || '钱包连接失败'
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : '钱包连接失败'
       setError(errorMsg)
       onError?.(errorMsg)
     }

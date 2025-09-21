@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, X, Loader2, AlertTriangle } from 'lucide-react'
+import { Check, Loader2, AlertTriangle } from 'lucide-react'
 
 interface KaiaPaymentProps {
   amount: number
@@ -40,8 +40,8 @@ export function KaiaPayment({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: '0x2019' }], // Kaia Mainnet
         })
-      } catch (switchError: any) {
-        if (switchError.code === 4902) {
+      } catch (switchError: unknown) {
+        if (switchError && typeof switchError === 'object' && 'code' in switchError && switchError.code === 4902) {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
@@ -92,9 +92,9 @@ export function KaiaPayment({
         onSuccess(hash)
       }, 2000)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Kaia payment failed:', error)
-      const message = error.message || '支付失败'
+      const message = error instanceof Error ? error.message : '支付失败'
       setErrorMessage(message)
       setStatus('error')
       onError(message)

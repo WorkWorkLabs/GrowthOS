@@ -72,9 +72,9 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: '0x2019' }], // Kaia Mainnet
         })
-      } catch (switchError: any) {
+      } catch (switchError: unknown) {
         // 如果网络不存在，添加Kaia网络
-        if (switchError.code === 4902) {
+        if (switchError && typeof switchError === 'object' && 'code' in switchError && switchError.code === 4902) {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
@@ -117,8 +117,8 @@ export function MobileKaiaWallet({ onConnect, onError }: MobileKaiaWalletProps) 
 
       onConnect?.(connectedAddress)
 
-    } catch (err: any) {
-      const errorMsg = err.message || '钱包连接失败'
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : '钱包连接失败'
       setError(errorMsg)
       onError?.(errorMsg)
       console.error('Kaia wallet connection failed:', err)

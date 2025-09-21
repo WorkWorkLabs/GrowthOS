@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useThirdWeb } from '@/providers/ThirdWebProvider'
 import { useLiff } from '@/hooks/useLiff'
-import { Check, X, Loader2, AlertTriangle, ExternalLink, Wallet } from 'lucide-react'
+import { Check, Loader2, AlertTriangle, ExternalLink, Wallet } from 'lucide-react'
 
 interface MiniDappPaymentProps {
   amount: number
@@ -38,9 +38,9 @@ export function MiniDappPayment({
       setStatus('connecting')
       try {
         await connectWallet()
-      } catch (error: any) {
+      } catch (error: unknown) {
         setStatus('error')
-        const message = error.message || '钱包连接失败'
+        const message = error instanceof Error ? error.message : '钱包连接失败'
         setErrorMessage(message)
         onError(message)
         return
@@ -73,9 +73,9 @@ export function MiniDappPayment({
         onSuccess(hash)
       }, 2000)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('MiniDapp支付失败:', error)
-      const message = error.message || '支付失败'
+      const message = error instanceof Error ? error.message : '支付失败'
       setErrorMessage(message)
       setStatus('error')
       onError(message)
