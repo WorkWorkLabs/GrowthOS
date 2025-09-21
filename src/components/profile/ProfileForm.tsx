@@ -349,6 +349,7 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
           <div className="mb-4">
             <div className="flex space-x-2 bg-gray-100 rounded-lg p-1">
               <button
+                type="button"
                 onClick={() => setShowKaiaWallet(false)}
                 className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                   !showKaiaWallet 
@@ -359,6 +360,7 @@ export function ProfileForm({ profile, onSave, onCancel }: ProfileFormProps) {
                 Solana
               </button>
               <button
+                type="button"
                 onClick={() => setShowKaiaWallet(true)}
                 className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                   showKaiaWallet 
