@@ -39,8 +39,12 @@ export async function POST(request: NextRequest) {
 
     // 检查用户余额
     if (!supabase) {
+      console.error("Supabase client is null. Check environment variables:", {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'exists' : 'missing'
+      });
       return NextResponse.json(
-        { error: "数据库连接失败" },
+        { error: "数据库连接失败，请检查环境变量配置" },
         { status: 500 },
       );
     }
@@ -62,6 +66,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "积分不足，需要10个积分才能生成海报" },
         { status: 400 },
+      );
+    }
+
+    // 先扣减用户积分
+    const { error: deductError } = await supabase
+      .from("users")
+      .update({ 
+        banana_credits: (user.banana_credits || 0) - 10 
+      })
+      .eq("id", userId);
+
+    if (deductError) {
+      console.error("积分扣减失败:", deductError);
+      return NextResponse.json(
+        { error: "积分扣减失败，请稍后重试" },
+        { status: 500 },
       );
     }
 
@@ -120,19 +140,6 @@ Create a high-quality promotional poster based on this description.`;
     const imagePart = candidate.content.parts.find((part) => part.inlineData);
     if (!imagePart || !imagePart.inlineData) {
       throw new Error("No image data found");
-    }
-
-    // 生成成功，扣减用户积分
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ 
-        banana_credits: (user.banana_credits || 0) - 10 
-      })
-      .eq("id", userId);
-
-    if (updateError) {
-      console.error("积分扣减失败:", updateError);
-      // 这里不返回错误，因为图片已经生成了
     }
 
     return NextResponse.json({
