@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useAuth } from '@/providers/AuthProvider'
 
 type FormData = {
   logoFile: File | null
@@ -20,6 +21,7 @@ interface BananaPosterGeneratorProps {
 }
 
 export function BananaPosterGenerator({ isOpen, onClose }: BananaPosterGeneratorProps) {
+  const { user } = useAuth()
   const [form, setForm] = useState<FormData>({
     logoFile: null,
     logoPreview: null,
@@ -73,12 +75,15 @@ export function BananaPosterGenerator({ isOpen, onClose }: BananaPosterGenerator
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form: {
-          name: form.name,
-          description: form.description,
-          category: form.category,
-          price: form.price,
-        } }),
+        body: JSON.stringify({ 
+          form: {
+            name: form.name,
+            description: form.description,
+            category: form.category,
+            price: form.price,
+          },
+          userId: user?.id
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || '生成失败')

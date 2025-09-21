@@ -14,6 +14,7 @@ export interface AuthContextType {
   signOut: () => Promise<void>
   connectWallet: (walletAddress: string) => Promise<void>
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>
+  refreshProfile: () => Promise<void>
 }
 
 // Auth hook implementation
@@ -75,7 +76,7 @@ export function useAuthProvider() {
       // 查询用户资料
       const { data, error } = await supabase
         .from('users')
-        .select('id, username, email, bio, avatar, wallet_address, created_at')
+        .select('id, username, email, bio, avatar, wallet_address, banana_credits, credits_claimed, created_at')
         .eq('id', userId)
         .maybeSingle()
 
@@ -293,6 +294,12 @@ export function useAuthProvider() {
     await loadUserProfile(user.id)
   }
 
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await loadUserProfile(user.id)
+    }
+  }
+
   return {
     user,
     profile,
@@ -302,6 +309,7 @@ export function useAuthProvider() {
     signOut,
     connectWallet,
     updateProfile,
+    refreshProfile,
   }
 }
 
@@ -314,6 +322,8 @@ function convertToUserProfile(data: Record<string, unknown>): UserProfile {
     username: data.username as string,
     bio: (data.bio as string) || '',
     avatar: (data.avatar as string) || 'https://avatars.githubusercontent.com/u/190834534?s=200&v=4',
+    banana_credits: (data.banana_credits as number) || 0,
+    credits_claimed: (data.credits_claimed as boolean) || false,
     social: {
       wechat: data.social_wechat as string | undefined,
       alipay: data.social_alipay as string | undefined,

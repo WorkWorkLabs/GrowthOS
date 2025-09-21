@@ -72,6 +72,8 @@ export interface UserProfile {
   username: string
   bio?: string
   avatar: string
+  banana_credits?: number      // Added banana credits
+  credits_claimed?: boolean    // Added credits claimed flag
   social: {
     twitter?: string
     linkedin?: string

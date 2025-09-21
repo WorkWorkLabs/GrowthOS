@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { supabase } from "@/lib/supabase";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,7 +14,7 @@ const promptB = `The user has provided a description for the design of their pro
 
 export async function POST(request: NextRequest) {
   try {
-    const { form } = await request.json();
+    const { form, userId } = await request.json();
 
     if (
       !form ||
@@ -24,6 +25,42 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "缺少必需的表单字段" },
+        { status: 400 },
+      );
+    }
+
+    // 检查用户是否登录和余额
+    if (!userId) {
+      return NextResponse.json(
+        { error: "请先登录" },
+        { status: 401 },
+      );
+    }
+
+    // 检查用户余额
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "数据库连接失败" },
+        { status: 500 },
+      );
+    }
+
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("banana_credits")
+      .eq("id", userId)
+      .single();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: "用户信息获取失败" },
+        { status: 400 },
+      );
+    }
+
+    if ((user.banana_credits || 0) < 10) {
+      return NextResponse.json(
+        { error: "积分不足，需要10个积分才能生成海报" },
         { status: 400 },
       );
     }
@@ -83,6 +120,19 @@ Create a high-quality promotional poster based on this description.`;
     const imagePart = candidate.content.parts.find((part) => part.inlineData);
     if (!imagePart || !imagePart.inlineData) {
       throw new Error("No image data found");
+    }
+
+    // 生成成功，扣减用户积分
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ 
+        banana_credits: (user.banana_credits || 0) - 10 
+      })
+      .eq("id", userId);
+
+    if (updateError) {
+      console.error("积分扣减失败:", updateError);
+      // 这里不返回错误，因为图片已经生成了
     }
 
     return NextResponse.json({

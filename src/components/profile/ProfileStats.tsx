@@ -1,13 +1,56 @@
 'use client'
 
+import { useState } from 'react'
 import { UserProfile } from '@/types/web3'
 import { Package, Star, PartyPopper, CheckCircle, Circle, DollarSign } from 'lucide-react'
+import { useAuth } from '@/providers/AuthProvider'
+import { supabase } from '@/lib/supabase'
 
 interface ProfileStatsProps {
   profile: UserProfile
 }
 
 export function ProfileStats({ profile }: ProfileStatsProps) {
+  const { refreshProfile } = useAuth()
+  const [claimingCredits, setClaimingCredits] = useState(false)
+
+  const claimFreeCredits = async () => {
+    if (!profile.id) return
+    
+    if (profile.credits_claimed) {
+      alert('You have already claimed your free credits!')
+      return
+    }
+    
+    if (!supabase) {
+      alert('Database connection failed. Please try again.')
+      return
+    }
+    
+    setClaimingCredits(true)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ 
+          banana_credits: (profile.banana_credits || 0) + 100,
+          credits_claimed: true
+        })
+        .eq('id', profile.id)
+
+      if (error) {
+        throw error
+      }
+
+      alert('🎉 Successfully claimed 100 free credits!')
+      
+      await refreshProfile()
+    } catch (error) {
+      console.error('Failed to claim credits:', error)
+      alert('Failed to claim credits. Please try again.')
+    } finally {
+      setClaimingCredits(false)
+    }
+  }
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -100,6 +143,37 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
           <div className="flex items-center text-sm">
             <span className="text-text-secondary">Based on 42 reviews</span>
           </div>
+        </div>
+      </div>
+
+      {/* 积分余额 */}
+      <div className="bg-white rounded-xl p-6 shadow-card">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-text-secondary text-sm font-medium">Banana Credits</p>
+            <p className="text-2xl font-bold text-text-primary">
+              {profile.banana_credits || 0}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <span className="text-2xl">🍌</span>
+          </div>
+        </div>
+        <div className="mt-4">
+          {!profile.credits_claimed ? (
+            <button
+              onClick={claimFreeCredits}
+              disabled={claimingCredits}
+              className="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+            >
+              {claimingCredits ? 'Claiming...' : 'Claim 100 Free Credits'}
+            </button>
+          ) : (
+            <div className="flex items-center text-sm">
+              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+              <span className="text-green-600 font-medium">Free credits claimed</span>
+            </div>
+          )}
         </div>
       </div>
 
